@@ -54,6 +54,11 @@ export function ensureTables() {
       await s`alter table squash_matches add column if not exists loser_next_side text`;
       await s`alter table squash_matches alter column p1 drop not null`;
       await s`alter table squash_matches alter column p2 drop not null`;
+      await s`alter table squash_settings add column if not exists outfit_revealed boolean not null default false`;
+      await s`create table if not exists squash_votes (
+        voter uuid primary key references squash_players(id) on delete cascade,
+        candidate uuid not null references squash_players(id) on delete cascade
+      )`;
     })().catch((e) => { ready = null; throw e; });
   }
   return ready;

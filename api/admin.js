@@ -149,10 +149,16 @@ export default handler(async (req, res) => {
       return res.status(200).json({ ok: true });
     }
 
+    case 'outfit_reveal': {
+      await s`update squash_settings set outfit_revealed = ${!!req.body.reveal} where id = 1`;
+      return res.status(200).json({ ok: true });
+    }
+
     case 'reset':
+      await s`delete from squash_votes`;
       await s`delete from squash_matches`;
       await s`delete from squash_players`;
-      await s`update squash_settings set registration_open = true, phase = 'registration', start_time = null, qualifiers = null where id = 1`;
+      await s`update squash_settings set registration_open = true, phase = 'registration', start_time = null, qualifiers = null, outfit_revealed = false where id = 1`;
       return res.status(200).json({ ok: true });
 
     default:
