@@ -44,6 +44,16 @@ export function ensureTables() {
         score1 int,
         score2 int
       )`;
+      await s`alter table squash_settings add column if not exists qualifiers int`;
+      await s`alter table squash_matches add column if not exists slot int`;
+      await s`alter table squash_matches add column if not exists bracket_pos int`;
+      await s`alter table squash_matches add column if not exists kind text not null default 'match'`;
+      await s`alter table squash_matches add column if not exists next_id uuid`;
+      await s`alter table squash_matches add column if not exists next_side text`;
+      await s`alter table squash_matches add column if not exists loser_next_id uuid`;
+      await s`alter table squash_matches add column if not exists loser_next_side text`;
+      await s`alter table squash_matches alter column p1 drop not null`;
+      await s`alter table squash_matches alter column p2 drop not null`;
     })().catch((e) => { ready = null; throw e; });
   }
   return ready;
