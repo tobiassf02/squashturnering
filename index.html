@@ -179,8 +179,8 @@
   .who select { font: inherit; font-weight: 700; min-height: 40px; padding: 4px 10px; border: 2px solid var(--ink); border-radius: 10px; background: #fff; color: var(--ink); max-width: 100%; }
 
   .tabs { position: sticky; top: 0; z-index: 5; background: var(--wall); border-bottom: 2px solid var(--ink); }
-  .tabs .wrap { display: flex; gap: 8px; padding-top: 10px; padding-bottom: 10px; }
-  .tab { flex: 1; min-width: 0; padding: 0 2px; font-size: .92rem; min-height: 46px; font: inherit; font-weight: 800; border: 2px solid var(--ink); border-radius: 10px; background: transparent; color: var(--ink); cursor: pointer; }
+  .tabs .wrap { display: flex; gap: 5px; padding-top: 10px; padding-bottom: 10px; }
+  .tab { flex: 1; min-width: 0; padding: 0 1px; min-height: 46px; font: inherit; font-size: clamp(.66rem, 3vw, .85rem); font-weight: 800; border: 2px solid var(--ink); border-radius: 10px; background: transparent; color: var(--ink); cursor: pointer; }
   .tab[aria-current="page"] { background: var(--ink); color: #fff; }
 
   .pill { font-size: .8rem; font-weight: 800; padding: 2px 10px; border-radius: 99px; border: 2px solid var(--ink); margin-left: 8px; }
@@ -232,6 +232,10 @@
   .dlg-msg { min-height: 1.5em; color: var(--line); font-weight: 600; margin: 8px 0 0; }
   .dlg-actions { display: flex; gap: 10px; margin-top: 12px; }
   .dlg-actions .btn { flex: 1; }
+  .award { background: var(--card); border: 2px solid var(--ink); border-radius: 14px; padding: 16px 18px; margin-top: 12px; border-left: 8px solid var(--line); }
+  .award .kicker { margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; font-size: .8rem; color: var(--muted); }
+  .award .who-big { margin: 2px 0 6px; font-size: clamp(1.5rem, 7vw, 2.2rem); font-weight: 900; font-stretch: 118%; line-height: 1.05; overflow-wrap: anywhere; }
+  .award p { margin: 0; }
   .vote-list { display: grid; gap: 8px; margin-top: 12px; }
   .vote { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 52px; padding: 8px 16px; font: inherit; font-weight: 700; text-align: left; background: var(--card); color: var(--ink); border: 2px solid var(--ink); border-radius: 12px; cursor: pointer; }
   .vote[aria-pressed="true"] { background: var(--ball); box-shadow: inset 6px 0 0 var(--ink); }
@@ -278,6 +282,7 @@
     <button class="tab" data-tab="tabell">Tabell</button>
     <button class="tab" data-tab="sluttspill">Sluttspill</button>
     <button class="tab" data-tab="outfit">Outfit</button>
+    <button class="tab" data-tab="priser">Priser</button>
   </div></nav>
 </div>
 
@@ -324,6 +329,11 @@
     <section id="p-outfit" hidden>
       <h2>Beste outfit</h2>
       <div id="outfitBox"></div>
+    </section>
+
+    <section id="p-priser" hidden>
+      <h2>Priser</h2>
+      <div id="awardsBox"></div>
     </section>
 
     <section id="p-sluttspill" hidden>
@@ -788,8 +798,54 @@
     }).join('')}</div><p class="msg" id="voteMsg" role="status" aria-live="polite"></p>`;
   }
 
+  // ---------- Priser ----------
+  function joinNames(ids) {
+    const n = ids.map((id) => esc(nameOf(id)));
+    return n.length <= 1 ? (n[0] || '') : n.slice(0, -1).join(', ') + ' og ' + n[n.length - 1];
+  }
+  const fmt1 = (x) => x.toFixed(1).replace('.', ',');
+
+  function awardsHtml() {
+    const played = matches.filter((m) => m.score1 != null && m.score2 != null && m.p1 && m.p2);
+    if (!played.length) return '<div class="note">Ingen kamper er spilt ennå. Prisene dukker opp når resultatene kommer inn.</div>';
+    const st = new Map(players.map((p) => [p.id, { id: p.id, k: 0, w: 0, pf: 0 }]));
+    played.forEach((m) => {
+      const a = st.get(m.p1), b = st.get(m.p2);
+      if (!a || !b) return;
+      a.k++; b.k++; a.pf += m.score1; b.pf += m.score2;
+      (m.score1 > m.score2 ? a : b).w++;
+    });
+    const list = [...st.values()].filter((x) => x.k > 0);
+    const top = (arr, f, max) => { const best = (max ? Math.max : Math.min)(...arr.map(f)); return { best, ids: arr.filter((x) => f(x) === best).map((x) => x.id) }; };
+    const done = phase() === 'done';
+    const cards = [];
+    const card = (kicker, ids, text) => cards.push(`<div class="award"><p class="kicker">${kicker}</p><p class="who-big">${joinNames(ids)}</p><p>${text}</p></div>`);
+
+    const wins = top(list, (x) => x.w, true);
+    if (wins.best > 0) card('Seiersmaskinen', wins.ids, `${wins.best === 1 ? '1 seier' : wins.best + ' seiere'}. Gulvet er ${wins.ids.length > 1 ? 'delt mellom dem' : 'vinnerens'} nå.`);
+
+    const avg = (x) => x.pf / x.k;
+    const total = (ids) => ids.map((id) => st.get(id).pf).join('/');
+    const hi = top(list, avg, true);
+    const lo = top(list, avg, false);
+    card('Poengpumpa', hi.ids, `Scoret i snitt ${fmt1(hi.best)} poeng per kamp (totalt ${total(hi.ids)}). Pumpa går på høygir.`);
+    if (list.length > 1 && lo.ids.length < list.length && lo.best !== hi.best) {
+      card('Den gavmilde', lo.ids, `Scoret bare ${fmt1(lo.best)} poeng i snitt per kamp (totalt ${total(lo.ids)}). Åpenbart opptatt av å være en god vert.`);
+    }
+
+    const gap = (m) => Math.abs(m.score1 - m.score2);
+    const big = Math.max(...played.map(gap));
+    const bigs = played.filter((m) => gap(m) === big);
+    const m = bigs[0];
+    const w = m.score1 > m.score2 ? m.p1 : m.p2, l = w === m.p1 ? m.p2 : m.p1;
+    const ws = Math.max(m.score1, m.score2), ls = Math.min(m.score1, m.score2);
+    card('Knuseren', [w], `Knuste ${esc(nameOf(l))} ${ws}–${ls}.${bigs.length > 1 ? ` (Flere kamper endte med ${big} poengs margin.)` : ''} ${esc(nameOf(l))} trenger kanskje en pause.`);
+
+    return `<p class="muted">${done ? 'Endelig resultat.' : 'Foreløpig. Prisene kan endre seg til alle kamper er spilt.'} Seiere teller alle kamper, poengprisene teller snitt per kamp.</p>${cards.join('')}`;
+  }
+
   // ---------- Tegning ----------
-  const TABS = ['kamper', 'tabell', 'sluttspill', 'outfit'];
+  const TABS = ['kamper', 'tabell', 'sluttspill', 'outfit', 'priser'];
   function currentTab() {
     const h = location.hash.slice(1);
     if (TABS.includes(h)) return h;
@@ -842,11 +898,12 @@
       $('#tableBox').innerHTML = tableHtml();
       $('#koBox').innerHTML = koHtml(false);
       $('#outfitBox').innerHTML = outfitHtml();
+      $('#awardsBox').innerHTML = awardsHtml();
       $('#adminRounds').innerHTML = roundsHtml(true);
       $('#adminKo').innerHTML = koMatches().length ? bracketHtml(true) : '';
     } else {
       TABS.forEach((t) => { $('#p-' + t).hidden = true; });
-      $('#rounds').innerHTML = $('#tableBox').innerHTML = $('#koBox').innerHTML = $('#outfitBox').innerHTML = $('#adminRounds').innerHTML = $('#adminKo').innerHTML = '';
+      $('#rounds').innerHTML = $('#tableBox').innerHTML = $('#koBox').innerHTML = $('#outfitBox').innerHTML = $('#awardsBox').innerHTML = $('#adminRounds').innerHTML = $('#adminKo').innerHTML = '';
     }
 
     // Admin
