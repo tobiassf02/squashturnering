@@ -180,7 +180,7 @@
 
   .tabs { position: sticky; top: 0; z-index: 5; background: var(--wall); border-bottom: 2px solid var(--ink); }
   .tabs .wrap { display: flex; gap: 8px; padding-top: 10px; padding-bottom: 10px; }
-  .tab { flex: 1; min-height: 46px; font: inherit; font-weight: 800; border: 2px solid var(--ink); border-radius: 10px; background: transparent; color: var(--ink); cursor: pointer; }
+  .tab { flex: 1; min-width: 0; padding: 0 2px; font-size: .92rem; min-height: 46px; font: inherit; font-weight: 800; border: 2px solid var(--ink); border-radius: 10px; background: transparent; color: var(--ink); cursor: pointer; }
   .tab[aria-current="page"] { background: var(--ink); color: #fff; }
 
   .pill { font-size: .8rem; font-weight: 800; padding: 2px 10px; border-radius: 99px; border: 2px solid var(--ink); margin-left: 8px; }
@@ -232,6 +232,14 @@
   .dlg-msg { min-height: 1.5em; color: var(--line); font-weight: 600; margin: 8px 0 0; }
   .dlg-actions { display: flex; gap: 10px; margin-top: 12px; }
   .dlg-actions .btn { flex: 1; }
+  .vote-list { display: grid; gap: 8px; margin-top: 12px; }
+  .vote { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 52px; padding: 8px 16px; font: inherit; font-weight: 700; text-align: left; background: var(--card); color: var(--ink); border: 2px solid var(--ink); border-radius: 12px; cursor: pointer; }
+  .vote[aria-pressed="true"] { background: var(--ball); box-shadow: inset 6px 0 0 var(--ink); }
+  .vote .chk { font-size: .8rem; font-weight: 800; }
+  .tally { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .tally li { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; font-weight: 700; }
+  .tally .bar { grid-column: 1 / -1; height: 10px; border-radius: 99px; background: #DDDFD8; overflow: hidden; }
+  .tally .bar i { display: block; height: 100%; background: var(--line); }
   .dlg-clear { width: 100%; margin-top: 10px; }
 </style>
 </head>
@@ -269,6 +277,7 @@
     <button class="tab" data-tab="kamper">Kamper</button>
     <button class="tab" data-tab="tabell">Tabell</button>
     <button class="tab" data-tab="sluttspill">Sluttspill</button>
+    <button class="tab" data-tab="outfit">Outfit</button>
   </div></nav>
 </div>
 
@@ -310,6 +319,11 @@
     <section id="p-tabell" hidden>
       <h2>Tabell</h2>
       <div id="tableBox"></div>
+    </section>
+
+    <section id="p-outfit" hidden>
+      <h2>Beste outfit</h2>
+      <div id="outfitBox"></div>
     </section>
 
     <section id="p-sluttspill" hidden>
@@ -373,6 +387,13 @@
       <section class="card" id="koCard" hidden>
         <h2>Start sluttspillet</h2>
         <div id="koCardBody"></div>
+      </section>
+
+      <section class="card" id="outfitCard" hidden>
+        <h2>Outfit-konkurransen</h2>
+        <p id="outfitAdminText"></p>
+        <div class="actions"><button class="btn btn-red" data-action="outfit-reveal" id="outfitBtn"></button></div>
+        <p class="msg" id="outfitMsg" role="status" aria-live="polite"></p>
       </section>
 
       <section class="card" id="runningCard" hidden>
@@ -440,6 +461,7 @@
   let players = [];
   let matches = [];
   let standings = [];
+  let outfit = { revealed: false, voters: [], my_vote: null, tally: null };
   let choosingMe = false;
   let settings = { registration_open: true, phase: 'registration' };
   let lastSig = '';
@@ -745,8 +767,29 @@
     if (s) $('#koEst').innerHTML = koEstimate(parseInt(s.value, 10));
   }
 
+  // ---------- Outfit ----------
+  function outfitHtml() {
+    const me = myId();
+    if (outfit.revealed && outfit.tally) {
+      const max = Math.max(0, ...outfit.tally.map((x) => x.votes));
+      const total = outfit.tally.reduce((a, x) => a + x.votes, 0);
+      const winners = max > 0 ? outfit.tally.filter((x) => x.votes === max) : [];
+      const head = winners.length
+        ? `<div class="champ"><p class="kicker">Beste outfit</p><p class="big">${winners.map((w) => esc(nameOf(w.id))).join(' &amp; ')}</p><p>${max} ${max === 1 ? 'stemme' : 'stemmer'}${winners.length > 1 ? ' hver (delt seier)' : ''}</p></div>`
+        : '<div class="note">Ingen stemte.</div>';
+      return `${head}<ul class="tally">${outfit.tally.map((x) => `<li><span>${esc(nameOf(x.id))}</span><span>${x.votes}</span><span class="bar"><i style="width:${max ? Math.round((x.votes / max) * 100) : 0}%"></i></span></li>`).join('')}</ul><p class="legend">${total} ${total === 1 ? 'stemme' : 'stemmer'} totalt.</p>`;
+    }
+    const count = outfit.voters.length;
+    const info = `<p class="muted">Hvem har dagens beste outfit? Du kan ikke stemme på deg selv, og du kan bytte stemme helt til admin avslutter. ${count} av ${players.length} har stemt.</p>`;
+    if (!me || !players.some((p) => p.id === me)) return `${info}<div class="note">Velg hvem du er øverst på siden for å stemme.</div>`;
+    return `${info}<div class="vote-list">${players.filter((p) => p.id !== me).map((p) => {
+      const on = outfit.my_vote === p.id;
+      return `<button class="vote" data-action="vote" data-id="${esc(p.id)}" aria-pressed="${on}"><span>${esc(p.name)}</span><span class="chk">${on ? 'Din stemme ✓' : ''}</span></button>`;
+    }).join('')}</div><p class="msg" id="voteMsg" role="status" aria-live="polite"></p>`;
+  }
+
   // ---------- Tegning ----------
-  const TABS = ['kamper', 'tabell', 'sluttspill'];
+  const TABS = ['kamper', 'tabell', 'sluttspill', 'outfit'];
   function currentTab() {
     const h = location.hash.slice(1);
     if (TABS.includes(h)) return h;
@@ -798,11 +841,12 @@
       $('#rounds').innerHTML = roundsHtml(false);
       $('#tableBox').innerHTML = tableHtml();
       $('#koBox').innerHTML = koHtml(false);
+      $('#outfitBox').innerHTML = outfitHtml();
       $('#adminRounds').innerHTML = roundsHtml(true);
       $('#adminKo').innerHTML = koMatches().length ? bracketHtml(true) : '';
     } else {
       TABS.forEach((t) => { $('#p-' + t).hidden = true; });
-      $('#rounds').innerHTML = $('#tableBox').innerHTML = $('#koBox').innerHTML = $('#adminRounds').innerHTML = $('#adminKo').innerHTML = '';
+      $('#rounds').innerHTML = $('#tableBox').innerHTML = $('#koBox').innerHTML = $('#outfitBox').innerHTML = $('#adminRounds').innerHTML = $('#adminKo').innerHTML = '';
     }
 
     // Admin
@@ -815,6 +859,11 @@
     $('#runningCard').hidden = !running;
     $('#adminRoundsSection').hidden = !running;
     $('#adminKoSection').hidden = !koMatches().length;
+    $('#outfitCard').hidden = !running;
+    $('#outfitAdminText').textContent = outfit.revealed
+      ? 'Avstemmingen er avsluttet og vinneren vises for alle.'
+      : `${outfit.voters.length} av ${players.length} har stemt. Stillingen er skjult til du avslutter.`;
+    $('#outfitBtn').textContent = outfit.revealed ? 'Åpne avstemningen igjen' : 'Avslutt og vis vinner';
     $('#koCard').hidden = ph !== 'groups';
     if (ph === 'groups') renderKoCard();
     $('#reshuffleBtn').hidden = !(ph === 'groups' && noScores);
@@ -854,7 +903,7 @@
   async function load(force) {
     let data;
     try {
-      data = await api('state');
+      data = await api('state' + (myId() ? '?me=' + encodeURIComponent(myId()) : ''));
     } catch (e) {
       if (e.code === 'NO_DB') {
         $('#setupText').textContent = e.message;
@@ -868,13 +917,14 @@
     }
     $('#setup').hidden = true;
     route();
-    const sig = JSON.stringify([data.players, data.settings, data.matches, data.standings, myId(), choosingMe]);
+    const sig = JSON.stringify([data.players, data.settings, data.matches, data.standings, data.outfit, myId(), choosingMe]);
     if (!force && sig === lastSig) return;
     lastSig = sig;
     players = data.players;
     settings = data.settings;
     matches = data.matches || [];
     standings = data.standings || [];
+    outfit = data.outfit || outfit;
     if (myId() && !players.some((x) => x.id === myId())) store.set('squash_me', null);
     render();
   }
@@ -969,6 +1019,20 @@
         await load(true);
       }
 
+      if (action === 'vote') {
+        const same = outfit.my_vote === btn.dataset.id;
+        await api('vote', { voter_id: myId(), candidate_id: same ? null : btn.dataset.id });
+        await load(true);
+        return;
+      }
+
+      if (action === 'outfit-reveal') {
+        if (!outfit.revealed && !confirm('Avslutte avstemmingen og vise vinneren til alle?')) return;
+        await adminCall('outfit_reveal', { reveal: !outfit.revealed });
+        await load(true);
+        return;
+      }
+
       if (action === 'switch-me') { choosingMe = true; renderWho(); return; }
       if (action === 'cancel-me') { choosingMe = false; renderWho(); return; }
 
@@ -1000,6 +1064,8 @@
       else if (action === 'start') say($('#startMsg'), err.message);
       else if (action === 'reshuffle' || action === 'undo-ko') say($('#runMsg'), err.message);
       else if (action === 'start-ko') say($('#koMsg'), err.message);
+      else if (action === 'vote') { const v = $('#voteMsg'); if (v) say(v, err.message); load(true); }
+      else if (action === 'outfit-reveal') say($('#outfitMsg'), err.message);
       else alert(err.message);
     }
   });
