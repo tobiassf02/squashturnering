@@ -86,7 +86,7 @@
 
   label { display: block; font-weight: 700; margin-bottom: 6px; }
   .row { display: flex; gap: 10px; flex-wrap: wrap; }
-  input[type="text"], input[type="password"] {
+  input[type="text"], input[type="password"], input[type="time"] {
     flex: 1 1 200px;
     min-height: 52px;
     padding: 10px 14px;
@@ -143,6 +143,27 @@
   footer { padding: 0 0 36px; text-align: center; font-size: .9rem; }
   footer a { color: var(--muted); }
   [hidden] { display: none !important; }
+
+  /* Kamper */
+  .round-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .round-head h3 { margin: 0; font-size: 1.25rem; font-weight: 800; font-stretch: 112%; }
+  .time { color: var(--muted); font-weight: 600; }
+  .matches { display: grid; gap: 10px; }
+  @media (min-width: 640px) { .matches { grid-template-columns: 1fr 1fr; } }
+  .match { display: grid; grid-template-columns: 62px 1fr; background: var(--card); border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; }
+  .match.mine { box-shadow: inset 6px 0 0 var(--ball); }
+  .court-no { background: var(--line); color: #fff; font-weight: 800; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; padding: 6px 2px; text-align: center; font-size: .78rem; }
+  .court-no b { font-size: 1.6rem; font-stretch: 112%; }
+  .match-body { padding: 8px 14px 10px; min-width: 0; }
+  .prow { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 34px; }
+  .prow + .prow { border-top: 1.5px solid rgba(21,24,27,.14); }
+  .pname { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+  .prow.win .pname { font-weight: 800; }
+  .score { min-width: 36px; text-align: center; font-weight: 800; font-size: 1.1rem; padding: 0 6px; border-radius: 8px; color: var(--muted); }
+  .prow.win .score { background: var(--ball); color: var(--ink); }
+  .match-foot { margin-top: 8px; }
+  .sit { margin: 10px 0 0; padding: 10px 14px; border-radius: 10px; background: #EEF0EA; font-size: .95rem; }
+  #rounds > section, #adminRounds > section { margin-top: 22px; }
 </style>
 </head>
 <body>
@@ -197,9 +218,15 @@
       <div id="me"></div>
     </section>
 
-    <section>
+    <section id="listSection">
       <h2 id="count">Påmeldte</h2>
       <ul class="players" id="list"></ul>
+    </section>
+
+    <section id="groupsView" hidden>
+      <h2>Gruppespill</h2>
+      <p class="muted">Alle spiller to kamper. Plasseringen etter gruppespillet avgjør hvem du møter i sluttspillet.</p>
+      <div id="rounds"></div>
     </section>
   </div>
 
@@ -218,7 +245,7 @@
     </section>
 
     <div id="adminPanel" hidden>
-      <section class="card">
+      <section class="card" id="regCard">
         <h2>Påmelding</h2>
         <p>Status: <span id="adminStatus"></span></p>
         <div class="actions">
@@ -226,7 +253,7 @@
         </div>
       </section>
 
-      <section class="card">
+      <section class="card" id="playersCard">
         <h2 id="adminCount">Spillere</h2>
         <form id="addForm" autocomplete="off">
           <label for="addName">Legg til spiller (for de som ikke melder seg selv)</label>
@@ -244,15 +271,32 @@
         <div id="plan"></div>
       </section>
 
-      <section class="card">
+      <section class="card" id="startCard">
         <h2>Start turneringen</h2>
-        <p class="muted">Kampoppsettet bygger vi i neste steg.</p>
-        <button class="btn" disabled>Start turneringen</button>
+        <p class="muted">Stenger påmeldingen og trekker kampene i gruppespillet. Alle spiller to kamper.</p>
+        <label for="startTime">Første runde starter kl.</label>
+        <div class="row">
+          <input type="time" id="startTime" value="18:00">
+          <button class="btn btn-red" data-action="start" id="startBtn">Start turneringen</button>
+        </div>
+        <p class="msg" id="startMsg" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="card" id="runningCard" hidden>
+        <h2>Turneringen er i gang</h2>
+        <p class="muted">Kampene er trukket. Liker du ikke trekningen, kan du trekke på nytt så lenge ingen resultater er lagt inn.</p>
+        <button class="btn" data-action="reshuffle">Trekk kampene på nytt</button>
+        <p class="msg" id="runMsg" role="status" aria-live="polite"></p>
+      </section>
+
+      <section id="adminRoundsSection" hidden>
+        <h2>Kampene</h2>
+        <div id="adminRounds"></div>
       </section>
 
       <section class="card">
         <h2>Nullstill</h2>
-        <p class="muted">Sletter alle spillere og åpner påmeldingen på nytt. Kan ikke angres.</p>
+        <p class="muted">Sletter alle spillere og kamper og åpner påmeldingen på nytt. Kan ikke angres.</p>
         <button class="btn btn-danger" data-action="reset">Slett alt</button>
       </section>
     </div>
@@ -275,6 +319,7 @@
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   let players = [];
+  let matches = [];
   let settings = { registration_open: true, phase: 'registration' };
   let lastSig = '';
 
@@ -362,6 +407,44 @@
       ${verdict}${alt}`;
   }
 
+  // ---------- Kamper ----------
+  function clock(start, addMinutes) {
+    const [h, m] = (start || '18:00').split(':').map(Number);
+    const t = h * 60 + m + addMinutes;
+    return String(Math.floor(t / 60) % 24).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
+  }
+
+  function matchCard(m, nameOf, me) {
+    const mine = m.p1 === me || m.p2 === me;
+    const played = m.score1 != null && m.score2 != null;
+    const row = (id, sc, win) => `<div class="prow${win ? ' win' : ''}"><span class="pname">${esc(nameOf(id))}</span><span class="score">${sc == null ? '–' : sc}</span></div>`;
+    return `<div class="match${mine ? ' mine' : ''}">
+      <div class="court-no"><span>Bane</span><b>${m.court}</b></div>
+      <div class="match-body">${row(m.p1, m.score1, played && m.score1 > m.score2)}${row(m.p2, m.score2, played && m.score2 > m.score1)}${mine ? '<div class="match-foot"><span class="tag">Din kamp</span></div>' : ''}</div>
+    </div>`;
+  }
+
+  function roundsHtml() {
+    const byRound = {};
+    matches.filter((m) => m.stage === 'group').forEach((m) => { (byRound[m.round] = byRound[m.round] || []).push(m); });
+    const nums = Object.keys(byRound).map(Number).sort((a, b) => a - b);
+    const nameOf = (id) => { const p = players.find((x) => x.id === id); return p ? p.name : '?'; };
+    const me = myId();
+    return nums.map((r) => {
+      const ms = byRound[r].slice().sort((a, b) => a.court - b.court);
+      const playing = new Set();
+      ms.forEach((m) => { playing.add(m.p1); playing.add(m.p2); });
+      const sit = players.filter((p) => !playing.has(p.id)).map((p) => esc(p.name)).join(', ');
+      const from = clock(settings.start_time, (r - 1) * MATCH_MIN);
+      const to = clock(settings.start_time, r * MATCH_MIN);
+      return `<section>
+        <div class="round-head"><h3>Runde ${r}</h3><span class="time">kl. ${from}–${to}</span></div>
+        <div class="matches">${ms.map((m) => matchCard(m, nameOf, me)).join('')}</div>
+        ${sit ? `<p class="sit"><strong>Står over:</strong> ${sit}</p>` : ''}
+      </section>`;
+    }).join('');
+  }
+
   // ---------- Tegning ----------
   function render() {
     const open = !!settings.registration_open;
@@ -381,12 +464,28 @@
       ? players.map((p) => `<li><span>${esc(p.name)}</span>${p.id === myId() ? '<span class="tag">deg</span>' : ''}</li>`).join('')
       : '<li class="empty" style="display:block">Ingen er påmeldt ennå. Bli den første.</li>';
 
+    // Fase: påmelding eller gruppespill
+    const running = (settings.phase || 'registration') !== 'registration';
+    $('#reg').hidden = running;
+    $('#listSection').hidden = running;
+    $('#groupsView').hidden = !running;
+    const roundsMarkup = running ? roundsHtml() : '';
+    $('#rounds').innerHTML = roundsMarkup;
+    $('#adminRounds').innerHTML = roundsMarkup;
+    $('#adminRoundsSection').hidden = !running;
+
     // Admin
+    $('#regCard').hidden = running;
+    $('#addForm').hidden = running;
+    $('#addMsg').hidden = running;
+    $('#startCard').hidden = running;
+    $('#runningCard').hidden = !running;
+    $('#startBtn').disabled = players.length < 4;
     $('#adminStatus').innerHTML = open ? '<span class="status open">Åpen</span>' : '<span class="status closed">Stengt</span>';
     $('#toggleRegBtn').textContent = open ? 'Steng påmeldingen' : 'Åpne påmeldingen';
     $('#adminCount').textContent = players.length === 1 ? '1 spiller' : `${players.length} spillere`;
     $('#adminList').innerHTML = players.length
-      ? players.map((p) => `<li><span>${esc(p.name)}</span><button class="btn btn-danger btn-small" data-action="remove" data-id="${esc(p.id)}" aria-label="Fjern ${esc(p.name)}">Fjern</button></li>`).join('')
+      ? players.map((p) => `<li><span>${esc(p.name)}</span>${running ? '' : `<button class="btn btn-danger btn-small" data-action="remove" data-id="${esc(p.id)}" aria-label="Fjern ${esc(p.name)}">Fjern</button>`}</li>`).join('')
       : '<li class="empty" style="display:block">Ingen spillere ennå.</li>';
     $('#plan').innerHTML = planHtml(players.length);
   }
@@ -423,11 +522,12 @@
     }
     $('#setup').hidden = true;
     route();
-    const sig = JSON.stringify([data.players, data.settings, myId()]);
+    const sig = JSON.stringify([data.players, data.settings, data.matches, myId()]);
     if (!force && sig === lastSig) return;
     lastSig = sig;
     players = data.players;
     settings = data.settings;
+    matches = data.matches || [];
     if (myId() && !players.some((x) => x.id === myId())) store.set('squash_me', null);
     render();
   }
@@ -508,6 +608,20 @@
         await load(true);
       }
 
+      if (action === 'start') {
+        if (!confirm(`Starte turneringen med ${players.length} spillere? Påmeldingen stenges og kampene trekkes.`)) return;
+        await adminCall('start_tournament', { start_time: $('#startTime').value });
+        say($('#startMsg'), '');
+        await load(true);
+      }
+
+      if (action === 'reshuffle') {
+        if (!confirm('Trekke kampene på nytt? Dagens oppsett blir erstattet.')) return;
+        await adminCall('reshuffle');
+        say($('#runMsg'), 'Kampene er trukket på nytt.', true);
+        await load(true);
+      }
+
       if (action === 'reset') {
         if (!confirm('Slette alle spillere og starte på nytt? Dette kan ikke angres.')) return;
         await adminCall('reset');
@@ -516,6 +630,8 @@
       }
     } catch (err) {
       if (action === 'leave') { say($('#msg'), err.message); load(true); }
+      else if (action === 'start') say($('#startMsg'), err.message);
+      else if (action === 'reshuffle') say($('#runMsg'), err.message);
       else alert(err.message);
     }
   });
