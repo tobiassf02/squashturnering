@@ -33,6 +33,17 @@ export function ensureTables() {
         created_at timestamptz not null default now()
       )`;
       await s`create unique index if not exists squash_players_name_unique on squash_players (lower(trim(name)))`;
+      await s`alter table squash_settings add column if not exists start_time text`;
+      await s`create table if not exists squash_matches (
+        id uuid primary key default gen_random_uuid(),
+        stage text not null default 'group',
+        round int not null,
+        court int not null,
+        p1 uuid not null references squash_players(id) on delete cascade,
+        p2 uuid not null references squash_players(id) on delete cascade,
+        score1 int,
+        score2 int
+      )`;
     })().catch((e) => { ready = null; throw e; });
   }
   return ready;
