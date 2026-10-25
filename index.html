@@ -164,11 +164,80 @@
   .match-foot { margin-top: 8px; }
   .sit { margin: 10px 0 0; padding: 10px 14px; border-radius: 10px; background: #EEF0EA; font-size: .95rem; }
   #rounds > section, #adminRounds > section { margin-top: 22px; }
+
+  /* Kompakt topp når turneringen er i gang */
+  .hero.compact .wrap { align-items: center; padding-top: 16px; padding-bottom: 14px; }
+  .hero.compact h1 { font-size: clamp(1.5rem, 6vw, 2.3rem); line-height: 1; margin: 0; }
+  .hero.compact br, .hero.compact .facts { display: none; }
+  .hero.compact .when { font-size: 1rem; margin-top: 4px; }
+  .hero.compact .court { width: 46px; }
+  .hero.compact .ball { animation: none; }
+
+  .who { background: var(--card); border-bottom: 2px solid var(--ink); }
+  .who .wrap { display: flex; align-items: center; gap: 10px; padding-top: 8px; padding-bottom: 8px; flex-wrap: wrap; }
+  .who label { font-weight: 700; margin: 0; }
+  .who select { font: inherit; font-weight: 700; min-height: 40px; padding: 4px 10px; border: 2px solid var(--ink); border-radius: 10px; background: #fff; color: var(--ink); max-width: 100%; }
+
+  .tabs { position: sticky; top: 0; z-index: 5; background: var(--wall); border-bottom: 2px solid var(--ink); }
+  .tabs .wrap { display: flex; gap: 8px; padding-top: 10px; padding-bottom: 10px; }
+  .tab { flex: 1; min-height: 46px; font: inherit; font-weight: 800; border: 2px solid var(--ink); border-radius: 10px; background: transparent; color: var(--ink); cursor: pointer; }
+  .tab[aria-current="page"] { background: var(--ink); color: #fff; }
+
+  .pill { font-size: .8rem; font-weight: 800; padding: 2px 10px; border-radius: 99px; border: 2px solid var(--ink); margin-left: 8px; }
+  .pill.now { background: var(--ball); }
+  .pill.done { background: var(--ink); color: #fff; }
+  .wait { font-style: italic; color: var(--muted); font-weight: 500; }
+  .seed { display: inline-block; min-width: 24px; text-align: center; margin-right: 6px; font-size: .75rem; font-weight: 800; padding: 0 5px; border-radius: 6px; background: #E8EAE3; }
+  .match-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .state { font-size: .88rem; color: var(--muted); font-weight: 600; }
+
+  .table-card { background: var(--card); border: 2px solid var(--ink); border-radius: 14px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 9px 6px; text-align: center; font-variant-numeric: tabular-nums; }
+  th { font-size: .85rem; font-weight: 800; border-bottom: 2px solid var(--ink); background: #EEF0EA; }
+  td { border-bottom: 1.5px solid rgba(21,24,27,.12); }
+  tr:last-child td { border-bottom: 0; }
+  th:nth-child(2), td:nth-child(2) { text-align: left; }
+  td.rank { font-weight: 800; width: 38px; }
+  td.nm { font-weight: 700; overflow-wrap: anywhere; }
+  td.pts { font-weight: 900; }
+  tr.mine-row td { background: var(--ball); }
+  tr.out td { color: var(--muted); }
+  tr.in td.rank { box-shadow: inset 5px 0 0 var(--line); }
+  .legend { margin-top: 10px; font-size: .92rem; color: var(--muted); }
+  .progress { height: 10px; border-radius: 99px; background: #DDDFD8; overflow: hidden; margin: 6px 0 14px; }
+  .progress > i { display: block; height: 100%; background: var(--line); }
+
+  .bracket { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-left: 16px; padding-bottom: 12px; margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+  .col { flex: 0 0 min(80vw, 270px); scroll-snap-align: start; display: flex; flex-direction: column; justify-content: space-around; gap: 12px; }
+  .col h3 { margin: 0; font-size: 1.1rem; font-weight: 800; font-stretch: 112%; }
+  .col .match { grid-template-columns: 46px 1fr; }
+  .col .court-no b { font-size: 1.15rem; }
+  .col .court-no { font-size: .7rem; }
+
+  .champ { background: var(--ball); border: 2px solid var(--ink); border-radius: 14px; padding: 18px 20px; margin-bottom: 18px; }
+  .champ .kicker { margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; font-size: .85rem; }
+  .champ .big { margin: 2px 0 8px; font-size: clamp(2rem, 9vw, 3.4rem); font-weight: 900; font-stretch: 125%; line-height: 1; overflow-wrap: anywhere; }
+  .champ p { margin: 0; font-weight: 600; }
+
+  .note.warn { border-left-color: var(--line); background: #FDEDEA; }
+  select.big-select { font: inherit; font-weight: 700; min-height: 52px; padding: 8px 12px; border: 2px solid var(--ink); border-radius: 10px; background: #fff; color: var(--ink); flex: 1 1 200px; }
+
+  dialog { border: 2px solid var(--ink); border-radius: 16px; padding: 20px; width: min(92vw, 400px); background: var(--card); color: var(--ink); font-family: inherit; }
+  dialog::backdrop { background: rgba(21,24,27,.55); }
+  dialog h2 { margin-bottom: 4px; }
+  .score-grid { display: grid; grid-template-columns: 1fr 96px; gap: 10px 14px; align-items: center; margin: 16px 0 6px; }
+  .score-grid label { font-weight: 700; margin: 0; overflow-wrap: anywhere; }
+  .score-grid input { font: inherit; font-size: 1.6rem; font-weight: 800; text-align: center; min-height: 58px; width: 100%; border: 2px solid var(--ink); border-radius: 10px; }
+  .dlg-msg { min-height: 1.5em; color: var(--line); font-weight: 600; margin: 8px 0 0; }
+  .dlg-actions { display: flex; gap: 10px; margin-top: 12px; }
+  .dlg-actions .btn { flex: 1; }
+  .dlg-clear { width: 100%; margin-top: 10px; }
 </style>
 </head>
 <body>
 
-<header class="hero">
+<header class="hero" id="hero">
   <div class="wrap">
     <div>
       <h1>Squash-<br>turnering</h1>
@@ -193,6 +262,15 @@
     </div>
   </div>
 </header>
+
+<div id="runBars" hidden>
+  <div class="who"><div class="wrap" id="who"></div></div>
+  <nav class="tabs" aria-label="Visning"><div class="wrap">
+    <button class="tab" data-tab="kamper">Kamper</button>
+    <button class="tab" data-tab="tabell">Tabell</button>
+    <button class="tab" data-tab="sluttspill">Sluttspill</button>
+  </div></nav>
+</div>
 
 <main class="wrap">
 
@@ -223,10 +301,20 @@
       <ul class="players" id="list"></ul>
     </section>
 
-    <section id="groupsView" hidden>
+    <section id="p-kamper" hidden>
       <h2>Gruppespill</h2>
       <p class="muted">Alle spiller to kamper. Plasseringen etter gruppespillet avgjør hvem du møter i sluttspillet.</p>
       <div id="rounds"></div>
+    </section>
+
+    <section id="p-tabell" hidden>
+      <h2>Tabell</h2>
+      <div id="tableBox"></div>
+    </section>
+
+    <section id="p-sluttspill" hidden>
+      <h2>Sluttspill</h2>
+      <div id="koBox"></div>
     </section>
   </div>
 
@@ -266,7 +354,7 @@
         <ul class="players" id="adminList"></ul>
       </section>
 
-      <section class="card">
+      <section class="card" id="planCard">
         <h2>Tidsregnskap</h2>
         <div id="plan"></div>
       </section>
@@ -282,16 +370,30 @@
         <p class="msg" id="startMsg" role="status" aria-live="polite"></p>
       </section>
 
+      <section class="card" id="koCard" hidden>
+        <h2>Start sluttspillet</h2>
+        <div id="koCardBody"></div>
+      </section>
+
       <section class="card" id="runningCard" hidden>
-        <h2>Turneringen er i gang</h2>
-        <p class="muted">Kampene er trukket. Liker du ikke trekningen, kan du trekke på nytt så lenge ingen resultater er lagt inn.</p>
-        <button class="btn" data-action="reshuffle">Trekk kampene på nytt</button>
+        <h2 id="runTitle">Turneringen er i gang</h2>
+        <p class="muted" id="runText"></p>
+        <div class="actions">
+          <button class="btn" data-action="reshuffle" id="reshuffleBtn">Trekk kampene på nytt</button>
+          <button class="btn" data-action="undo-ko" id="undoKoBtn" hidden>Tilbake til gruppespillet</button>
+        </div>
         <p class="msg" id="runMsg" role="status" aria-live="polite"></p>
       </section>
 
       <section id="adminRoundsSection" hidden>
-        <h2>Kampene</h2>
+        <h2>Gruppespillet</h2>
+        <p class="muted">Som admin kan du legge inn og rette resultater for alle kamper.</p>
         <div id="adminRounds"></div>
+      </section>
+
+      <section id="adminKoSection" hidden>
+        <h2>Sluttspillet</h2>
+        <div id="adminKo"></div>
       </section>
 
       <section class="card">
@@ -308,6 +410,23 @@
   <a href="#" id="backLink" hidden>Tilbake til forsiden</a>
 </footer>
 
+<dialog id="dlg">
+  <form method="dialog" id="dlgForm">
+    <h2>Legg inn resultat</h2>
+    <p class="muted">Første til 11 poeng, og du må vinne med 2 poeng.</p>
+    <div class="score-grid">
+      <label for="sa" id="la"></label><input id="sa" type="number" inputmode="numeric" min="0" max="99">
+      <label for="sb" id="lb"></label><input id="sb" type="number" inputmode="numeric" min="0" max="99">
+    </div>
+    <p class="dlg-msg" id="dlgMsg" role="status" aria-live="polite"></p>
+    <div class="dlg-actions">
+      <button class="btn" type="button" id="dlgCancel">Avbryt</button>
+      <button class="btn btn-red" type="submit" id="dlgSave">Lagre resultat</button>
+    </div>
+    <button class="btn btn-danger dlg-clear" type="button" id="dlgClear" hidden>Fjern resultatet</button>
+  </form>
+</dialog>
+
 <script>
   // Rammene for dagen (brukes til tidsregnskapet i admin)
   const COURTS = 5;
@@ -320,6 +439,8 @@
 
   let players = [];
   let matches = [];
+  let standings = [];
+  let choosingMe = false;
   let settings = { registration_open: true, phase: 'registration' };
   let lastSig = '';
 
@@ -407,29 +528,83 @@
       ${verdict}${alt}`;
   }
 
-  // ---------- Kamper ----------
+  // ---------- Hjelpere ----------
   function clock(start, addMinutes) {
     const [h, m] = (start || '18:00').split(':').map(Number);
     const t = h * 60 + m + addMinutes;
     return String(Math.floor(t / 60) % 24).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
   }
+  const nameOf = (id) => { const p = players.find((x) => x.id === id); return p ? p.name : '?'; };
+  const phase = () => settings.phase || 'registration';
+  const groupMatches = () => matches.filter((m) => m.stage === 'group');
+  const koMatches = () => matches.filter((m) => m.stage === 'ko');
+  const groupRoundCount = () => Math.max(0, ...groupMatches().map((m) => m.round));
+  const koTime = (m) => clock(settings.start_time, (groupRoundCount() + m.slot) * MATCH_MIN);
+  const rankOf = () => new Map(standings.map((x) => [x.id, x.rank]));
 
-  function matchCard(m, nameOf, me) {
-    const mine = m.p1 === me || m.p2 === me;
+  function downstreamPlayed(m) {
+    return [m.next_id, m.loser_next_id].filter(Boolean).some((id) => {
+      const d = matches.find((x) => x.id === id);
+      return d && d.score1 != null;
+    });
+  }
+
+  function canEdit(m, admin) {
+    if (!m.p1 || !m.p2) return false;
+    const ph = phase();
+    if (m.stage === 'group') { if (ph !== 'groups') return false; }
+    else if (!(ph === 'knockout' || (admin && ph === 'done'))) return false;
+    if (m.stage === 'ko' && downstreamPlayed(m)) return false;
+    if (admin) return true;
+    return m.p1 === myId() || m.p2 === myId();
+  }
+
+  function waitText(m, side) {
+    const label = (src) => {
+      const parts = [src.p1, src.p2].map((id) => (id ? nameOf(id) : '?'));
+      return parts[0] === '?' && parts[1] === '?' ? 'forrige runde' : parts.join(' – ');
+    };
+    let src = matches.find((x) => x.next_id === m.id && x.next_side === side);
+    if (src) return 'Vinner av ' + label(src);
+    src = matches.find((x) => x.loser_next_id === m.id && x.loser_next_side === side);
+    if (src) return 'Taper av ' + label(src);
+    return '—';
+  }
+
+  // ---------- Kamper ----------
+  function matchCard(m, admin) {
+    const ko = m.stage === 'ko';
+    const me = myId();
+    const mine = !!me && (m.p1 === me || m.p2 === me);
     const played = m.score1 != null && m.score2 != null;
-    const row = (id, sc, win) => `<div class="prow${win ? ' win' : ''}"><span class="pname">${esc(nameOf(id))}</span><span class="score">${sc == null ? '–' : sc}</span></div>`;
+    const ranks = ko ? rankOf() : null;
+    const row = (side) => {
+      const id = m[side];
+      const sc = side === 'p1' ? m.score1 : m.score2;
+      const other = side === 'p1' ? m.score2 : m.score1;
+      const win = played && sc > other;
+      const nm = id
+        ? `${ranks && ranks.has(id) ? `<span class="seed">${ranks.get(id)}</span>` : ''}${esc(nameOf(id))}`
+        : `<span class="wait">${esc(waitText(m, side))}</span>`;
+      return `<div class="prow${win ? ' win' : ''}"><span class="pname">${nm}</span><span class="score">${sc == null ? '–' : sc}</span></div>`;
+    };
+    const foot = [];
+    if (ko) foot.push(`<span class="state">kl. ${koTime(m)}</span>`);
+    if (mine) foot.push('<span class="tag">Din kamp</span>');
+    if (canEdit(m, admin)) {
+      foot.push(`<button class="btn btn-small${played ? '' : ' btn-red'}" data-action="result" data-id="${esc(m.id)}" data-admin="${admin ? 1 : 0}">${played ? 'Endre' : 'Legg inn resultat'}</button>`);
+    }
     return `<div class="match${mine ? ' mine' : ''}">
       <div class="court-no"><span>Bane</span><b>${m.court}</b></div>
-      <div class="match-body">${row(m.p1, m.score1, played && m.score1 > m.score2)}${row(m.p2, m.score2, played && m.score2 > m.score1)}${mine ? '<div class="match-foot"><span class="tag">Din kamp</span></div>' : ''}</div>
+      <div class="match-body">${row('p1')}${row('p2')}${foot.length ? `<div class="match-foot">${foot.join('')}</div>` : ''}</div>
     </div>`;
   }
 
-  function roundsHtml() {
+  function roundsHtml(admin) {
     const byRound = {};
-    matches.filter((m) => m.stage === 'group').forEach((m) => { (byRound[m.round] = byRound[m.round] || []).push(m); });
+    groupMatches().forEach((m) => { (byRound[m.round] = byRound[m.round] || []).push(m); });
     const nums = Object.keys(byRound).map(Number).sort((a, b) => a - b);
-    const nameOf = (id) => { const p = players.find((x) => x.id === id); return p ? p.name : '?'; };
-    const me = myId();
+    const firstOpen = nums.find((r) => byRound[r].some((m) => m.score1 == null));
     return nums.map((r) => {
       const ms = byRound[r].slice().sort((a, b) => a.court - b.court);
       const playing = new Set();
@@ -437,18 +612,162 @@
       const sit = players.filter((p) => !playing.has(p.id)).map((p) => esc(p.name)).join(', ');
       const from = clock(settings.start_time, (r - 1) * MATCH_MIN);
       const to = clock(settings.start_time, r * MATCH_MIN);
+      const done = ms.every((m) => m.score1 != null);
+      const pill = done ? '<span class="pill done">Ferdig</span>' : (r === firstOpen ? '<span class="pill now">Spilles nå</span>' : '');
       return `<section>
-        <div class="round-head"><h3>Runde ${r}</h3><span class="time">kl. ${from}–${to}</span></div>
-        <div class="matches">${ms.map((m) => matchCard(m, nameOf, me)).join('')}</div>
+        <div class="round-head"><h3>Runde ${r}${pill}</h3><span class="time">kl. ${from}–${to}</span></div>
+        <div class="matches">${ms.map((m) => matchCard(m, admin)).join('')}</div>
         ${sit ? `<p class="sit"><strong>Står over:</strong> ${sit}</p>` : ''}
       </section>`;
     }).join('');
   }
 
+  // ---------- Tabell ----------
+  function progressHtml() {
+    const g = groupMatches();
+    const played = g.filter((m) => m.score1 != null).length;
+    if (!g.length) return '';
+    return `<p class="muted">${played} av ${g.length} gruppekamper er spilt.</p><div class="progress"><i style="width:${Math.round((played / g.length) * 100)}%"></i></div>`;
+  }
+
+  function tableHtml() {
+    const ph = phase();
+    const q = settings.qualifiers;
+    const koOn = ph === 'knockout' || ph === 'done';
+    const g = groupMatches();
+    const complete = g.length > 0 && g.every((m) => m.score1 != null);
+    const me = myId();
+    const rows = standings.map((x) => {
+      const cls = [x.id === me ? 'mine-row' : '', koOn ? (x.rank <= q ? 'in' : 'out') : ''].filter(Boolean).join(' ');
+      return `<tr class="${cls}"><td class="rank">${x.rank}</td><td class="nm">${esc(x.name)}</td><td>${x.k}</td><td>${x.w}</td><td>${x.diff > 0 ? '+' : ''}${x.diff}</td><td class="pts">${x.pts}</td></tr>`;
+    }).join('');
+    let legend = 'Seier gir 2 poeng. Ved lik poengsum teller poengdifferansen, deretter flest scorede poeng.';
+    if (koOn) legend += ` De ${q} beste (markert med rød kant) gikk videre til sluttspillet.`;
+    else legend += ' Admin velger når gruppespillet er ferdig hvor mange som går videre.';
+    return `${koOn ? '' : progressHtml()}
+      ${!koOn && !complete ? '<div class="note">Tabellen er foreløpig. Den endrer seg etter hvert som resultatene kommer inn.</div>' : ''}
+      <div class="table-card"><table>
+        <thead><tr><th>#</th><th>Spiller</th><th><abbr title="Kamper">K</abbr></th><th><abbr title="Seiere">S</abbr></th><th><abbr title="Poengdifferanse">+/−</abbr></th><th><abbr title="Poeng">P</abbr></th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>
+      <p class="legend">${legend}</p>`;
+  }
+
+  // ---------- Sluttspill ----------
+  const ROUND_NAMES = ['Finale', 'Semifinaler', 'Kvartfinaler', 'Åttedelsfinaler'];
+  function bracketHtml(admin) {
+    const ko = koMatches();
+    if (!ko.length) return '';
+    const K = Math.max(...ko.map((m) => m.round));
+    let cols = '';
+    for (let r = 1; r <= K; r++) {
+      const list = ko.filter((m) => m.round === r && m.kind !== 'bronze').sort((a, b) => a.bracket_pos - b.bracket_pos);
+      const bronze = r === K ? ko.find((m) => m.kind === 'bronze') : null;
+      if (!list.length && !bronze) continue;
+      const title = K - r < ROUND_NAMES.length ? ROUND_NAMES[K - r] : `Runde ${r}`;
+      cols += `<div class="col"><h3>${title}</h3>${list.map((m) => matchCard(m, admin)).join('')}${bronze ? `<h3 style="margin-top:6px">Bronsefinale</h3>${matchCard(bronze, admin)}` : ''}</div>`;
+    }
+    return `<div class="bracket">${cols}</div>`;
+  }
+
+  function championHtml() {
+    const ko = koMatches();
+    const fin = ko.find((m) => m.kind === 'match' && m.round === Math.max(...ko.map((x) => x.round)));
+    const bro = ko.find((m) => m.kind === 'bronze');
+    if (!fin || fin.score1 == null) return '';
+    const win = (m) => (m.score1 > m.score2 ? m.p1 : m.p2);
+    const lose = (m) => (m.score1 > m.score2 ? m.p2 : m.p1);
+    return `<div class="champ"><p class="kicker">Turneringsvinner</p><p class="big">${esc(nameOf(win(fin)))}</p>
+      <p>2. plass: ${esc(nameOf(lose(fin)))}${bro && bro.score1 != null ? ` &nbsp;·&nbsp; 3. plass: ${esc(nameOf(win(bro)))}` : ''}</p></div>`;
+  }
+
+  function koHtml(admin) {
+    const ph = phase();
+    if (ph === 'groups') {
+      return `${progressHtml()}<div class="note">Sluttspillet starter når alle gruppekamper er spilt. Admin bestemmer da hvor mange som går videre, og plasseringen i tabellen avgjør hvem du møter.</div>`;
+    }
+    const q = settings.qualifiers || players.length;
+    let B = 1; while (B < q) B *= 2;
+    const byes = B - q;
+    const note = byes > 0 ? `<div class="note">${q} spillere går videre. De ${byes === 1 ? 'best plasserte' : byes + ' best plasserte'} går direkte til neste runde.</div>` : '';
+    return `${ph === 'done' ? championHtml() : ''}${note}${bracketHtml(admin)}`;
+  }
+
+  // ---------- Admin: start sluttspill ----------
+  function koSlots(q) {
+    let B = 1; while (B < q) B *= 2;
+    const first = q - B / 2;
+    let s = first > 0 ? Math.ceil(first / COURTS) : 0;
+    for (let m = B / 4; m >= 1; m /= 2) s += Math.ceil(m / COURTS);
+    return s;
+  }
+
+  function koEstimate(q) {
+    const g = groupRoundCount();
+    const slots = Math.floor(SESSION_MIN / MATCH_MIN);
+    const total = g + koSlots(q);
+    const end = clock(settings.start_time, total * MATCH_MIN);
+    let cls = 'note', head;
+    if (total > slots) { cls = 'note warn'; head = `<strong>Det blir ikke plass.</strong> ${total} tidsluker trengs, men dere har ${slots}.`; }
+    else if (total === slots) { cls = 'note warn'; head = '<strong>Det går akkurat opp, uten slingringsmonn.</strong>'; }
+    else head = `<strong>Det er plass.</strong> ${slots - total} tidsluker (${(slots - total) * MATCH_MIN} min) til overs.`;
+    return `<div class="${cls}">${head}<br>Alt ferdig ca. kl. ${end} (sluttspill: ${koSlots(q)} tidsluker).</div>`;
+  }
+
+  function renderKoCard() {
+    const n = players.length;
+    const missing = groupMatches().filter((m) => m.score1 == null).length;
+    const sel = $('#qualSel');
+    const prev = sel ? sel.value : null;
+    const opts = [n];
+    if (n > 8) opts.push(8);
+    if (n > 4) opts.push(4);
+    const html = `
+      <p class="muted">Når alle gruppekamper er spilt, velger du hvor mange som går videre. Plasseringen i tabellen avgjør hvem som møter hvem.</p>
+      <label for="qualSel">Hvor mange går videre?</label>
+      <div class="row">
+        <select class="big-select" id="qualSel">${opts.map((o) => `<option value="${o}">${o === n ? `Alle (${n})` : `Topp ${o}`}</option>`).join('')}</select>
+        <button class="btn btn-red" data-action="start-ko" id="startKoBtn" ${missing ? 'disabled' : ''}>Start sluttspillet</button>
+      </div>
+      ${missing ? `<div class="note warn">Mangler resultat i ${missing} ${missing === 1 ? 'kamp' : 'kamper'}. Sluttspillet kan starte når alle er spilt.</div>` : ''}
+      <div id="koEst"></div>
+      <p class="msg" id="koMsg" role="status" aria-live="polite"></p>`;
+    if (html !== renderKoCard.last) {
+      renderKoCard.last = html;
+      $('#koCardBody').innerHTML = html;
+      const s = $('#qualSel');
+      if (prev && [...s.options].some((o) => o.value === prev)) s.value = prev;
+    }
+    updateKoEst();
+  }
+  function updateKoEst() {
+    const s = $('#qualSel');
+    if (s) $('#koEst').innerHTML = koEstimate(parseInt(s.value, 10));
+  }
+
   // ---------- Tegning ----------
+  const TABS = ['kamper', 'tabell', 'sluttspill'];
+  function currentTab() {
+    const h = location.hash.slice(1);
+    if (TABS.includes(h)) return h;
+    return phase() === 'groups' ? 'kamper' : 'sluttspill';
+  }
+
+  function renderWho() {
+    const me = players.find((p) => p.id === myId());
+    if (me && !choosingMe) {
+      $('#who').innerHTML = `<span>Du spiller som <strong>${esc(me.name)}</strong></span><button class="btn btn-small" data-action="switch-me">Bytt</button>`;
+    } else {
+      $('#who').innerHTML = `<label for="whoSel">Hvem er du?</label><select id="whoSel"><option value="">Velg navn …</option>${players.map((p) => `<option value="${esc(p.id)}"${me && me.id === p.id ? ' selected' : ''}>${esc(p.name)}</option>`).join('')}</select>${me ? '<button class="btn btn-small" data-action="cancel-me">Avbryt</button>' : ''}`;
+    }
+  }
+
   function render() {
     const open = !!settings.registration_open;
+    const ph = phase();
     const me = players.find((p) => p.id === myId());
+    const running = ph !== 'registration';
+    const admin = location.hash === '#admin';
 
     // Forside
     $('#regStatus').innerHTML = open
@@ -464,22 +783,48 @@
       ? players.map((p) => `<li><span>${esc(p.name)}</span>${p.id === myId() ? '<span class="tag">deg</span>' : ''}</li>`).join('')
       : '<li class="empty" style="display:block">Ingen er påmeldt ennå. Bli den første.</li>';
 
-    // Fase: påmelding eller gruppespill
-    const running = (settings.phase || 'registration') !== 'registration';
     $('#reg').hidden = running;
     $('#listSection').hidden = running;
-    $('#groupsView').hidden = !running;
-    const roundsMarkup = running ? roundsHtml() : '';
-    $('#rounds').innerHTML = roundsMarkup;
-    $('#adminRounds').innerHTML = roundsMarkup;
-    $('#adminRoundsSection').hidden = !running;
+    $('#hero').classList.toggle('compact', running || admin);
+    $('#runBars').hidden = !running || admin;
+
+    if (running) {
+      renderWho();
+      const tab = currentTab();
+      document.querySelectorAll('.tab').forEach((b) => {
+        if (b.dataset.tab === tab) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+      });
+      TABS.forEach((t) => { $('#p-' + t).hidden = t !== tab; });
+      $('#rounds').innerHTML = roundsHtml(false);
+      $('#tableBox').innerHTML = tableHtml();
+      $('#koBox').innerHTML = koHtml(false);
+      $('#adminRounds').innerHTML = roundsHtml(true);
+      $('#adminKo').innerHTML = koMatches().length ? bracketHtml(true) : '';
+    } else {
+      TABS.forEach((t) => { $('#p-' + t).hidden = true; });
+      $('#rounds').innerHTML = $('#tableBox').innerHTML = $('#koBox').innerHTML = $('#adminRounds').innerHTML = $('#adminKo').innerHTML = '';
+    }
 
     // Admin
+    const noScores = !matches.some((m) => m.score1 != null);
     $('#regCard').hidden = running;
     $('#addForm').hidden = running;
     $('#addMsg').hidden = running;
     $('#startCard').hidden = running;
+    $('#planCard').hidden = running;
     $('#runningCard').hidden = !running;
+    $('#adminRoundsSection').hidden = !running;
+    $('#adminKoSection').hidden = !koMatches().length;
+    $('#koCard').hidden = ph !== 'groups';
+    if (ph === 'groups') renderKoCard();
+    $('#reshuffleBtn').hidden = !(ph === 'groups' && noScores);
+    $('#undoKoBtn').hidden = ph !== 'knockout';
+    $('#runTitle').textContent = ph === 'done' ? 'Turneringen er ferdig' : ph === 'knockout' ? 'Sluttspillet er i gang' : 'Turneringen er i gang';
+    $('#runText').textContent = ph === 'groups'
+      ? 'Kampene er trukket. Liker du ikke trekningen, kan du trekke på nytt så lenge ingen resultater er lagt inn.'
+      : ph === 'knockout'
+        ? 'Er det feil i valget av hvor mange som går videre, kan du gå tilbake til gruppespillet så lenge ingen sluttspillkamper er spilt.'
+        : 'Alle kamper er spilt. Du kan fortsatt rette feil i finalen og bronsefinalen.';
     $('#startBtn').disabled = players.length < 4;
     $('#adminStatus').innerHTML = open ? '<span class="status open">Åpen</span>' : '<span class="status closed">Stengt</span>';
     $('#toggleRegBtn').textContent = open ? 'Steng påmeldingen' : 'Åpne påmeldingen';
@@ -496,6 +841,7 @@
     $('#view-admin').hidden = !admin;
     $('#adminLink').hidden = admin;
     $('#backLink').hidden = !admin;
+    $('#hero').classList.toggle('compact', admin || (settings.phase || 'registration') !== 'registration');
     if (admin) {
       const ok = adminOk();
       $('#pinCard').hidden = ok;
@@ -522,12 +868,13 @@
     }
     $('#setup').hidden = true;
     route();
-    const sig = JSON.stringify([data.players, data.settings, data.matches, myId()]);
+    const sig = JSON.stringify([data.players, data.settings, data.matches, data.standings, myId(), choosingMe]);
     if (!force && sig === lastSig) return;
     lastSig = sig;
     players = data.players;
     settings = data.settings;
     matches = data.matches || [];
+    standings = data.standings || [];
     if (myId() && !players.some((x) => x.id === myId())) store.set('squash_me', null);
     render();
   }
@@ -622,6 +969,26 @@
         await load(true);
       }
 
+      if (action === 'switch-me') { choosingMe = true; renderWho(); return; }
+      if (action === 'cancel-me') { choosingMe = false; renderWho(); return; }
+
+      if (action === 'result') { openResult(btn.dataset.id, btn.dataset.admin === '1'); return; }
+
+      if (action === 'start-ko') {
+        const q = parseInt($('#qualSel').value, 10);
+        if (!confirm(`Starte sluttspillet med ${q} spillere? Gruppespillet låses.`)) return;
+        await adminCall('start_knockout', { qualifiers: q });
+        say($('#koMsg'), '');
+        location.hash = '#admin';
+        await load(true);
+      }
+
+      if (action === 'undo-ko') {
+        if (!confirm('Gå tilbake til gruppespillet? Sluttspilloppsettet slettes.')) return;
+        await adminCall('undo_knockout');
+        await load(true);
+      }
+
       if (action === 'reset') {
         if (!confirm('Slette alle spillere og starte på nytt? Dette kan ikke angres.')) return;
         await adminCall('reset');
@@ -631,12 +998,80 @@
     } catch (err) {
       if (action === 'leave') { say($('#msg'), err.message); load(true); }
       else if (action === 'start') say($('#startMsg'), err.message);
-      else if (action === 'reshuffle') say($('#runMsg'), err.message);
+      else if (action === 'reshuffle' || action === 'undo-ko') say($('#runMsg'), err.message);
+      else if (action === 'start-ko') say($('#koMsg'), err.message);
       else alert(err.message);
     }
   });
 
-  window.addEventListener('hashchange', route);
+  // ---------- Hvem er du / faner ----------
+  document.addEventListener('change', (e) => {
+    if (e.target.id === 'whoSel') {
+      if (e.target.value) { store.set('squash_me', e.target.value); choosingMe = false; load(true); }
+    }
+    if (e.target.id === 'qualSel') updateKoEst();
+  });
+  document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => {
+    location.hash = b.dataset.tab;
+    window.scrollTo(0, 0);
+  }));
+
+  // ---------- Resultat-dialog ----------
+  const dlg = $('#dlg');
+  let dlgCtx = null;
+  function validScore(a, b) {
+    if (!Number.isInteger(a) || !Number.isInteger(b) || a < 0 || b < 0 || a > 99 || b > 99) return false;
+    const hi = Math.max(a, b), lo = Math.min(a, b);
+    if (hi === lo) return false;
+    if (hi === 11) return lo <= 9;
+    return hi > 11 && hi - lo === 2;
+  }
+  function openResult(id, admin) {
+    const m = matches.find((x) => x.id === id);
+    if (!m) return;
+    dlgCtx = { id, admin };
+    $('#la').textContent = nameOf(m.p1);
+    $('#lb').textContent = nameOf(m.p2);
+    $('#sa').value = m.score1 != null ? m.score1 : '';
+    $('#sb').value = m.score2 != null ? m.score2 : '';
+    $('#dlgMsg').textContent = '';
+    $('#dlgClear').hidden = !(admin && m.score1 != null);
+    dlg.showModal();
+    setTimeout(() => $('#sa').focus(), 0);
+  }
+  $('#dlgCancel').addEventListener('click', () => dlg.close());
+  $('#dlgForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const a = parseInt($('#sa').value, 10), b = parseInt($('#sb').value, 10);
+    if (!validScore(a, b)) {
+      $('#dlgMsg').textContent = 'Resultatet stemmer ikke med reglene. Første til 11, og man må vinne med 2 poeng. Eksempler: 11–9, 11–0 eller 13–11.';
+      return;
+    }
+    $('#dlgSave').disabled = true;
+    try {
+      if (dlgCtx.admin) await adminCall('set_result', { match_id: dlgCtx.id, score1: a, score2: b });
+      else await api('result', { match_id: dlgCtx.id, player_id: myId(), score1: a, score2: b });
+      dlg.close();
+      await load(true);
+    } catch (err) {
+      $('#dlgMsg').textContent = err.message;
+      load(true);
+    } finally {
+      $('#dlgSave').disabled = false;
+    }
+  });
+  $('#dlgClear').addEventListener('click', async () => {
+    if (!confirm('Fjerne resultatet?')) return;
+    try {
+      await adminCall('clear_result', { match_id: dlgCtx.id });
+      dlg.close();
+      await load(true);
+    } catch (err) {
+      $('#dlgMsg').textContent = err.message;
+    }
+  });
+
+  window.addEventListener('hashchange', () => { route(); render(); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
 
   // ---------- Start ----------
