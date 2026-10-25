@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Squash-turnering</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --wall: #F3F4F0;
+    --ink: #15181B;
+    --muted: #596068;
+    --line: #D3261C;
+    --wood: #DDB06B;
+    --wood-light: #E6C186;
+    --ball: #F2CF1D;
+    --card: #FFFFFF;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--wall);
+    color: var(--ink);
+    font-family: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 17px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  :focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+  /* Hero: gulvet i en squashhall */
+  .hero {
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.05) 0 2px, transparent 2px 46px),
+      var(--wood);
+    border-bottom: 5px solid var(--line);
+  }
+  .hero .wrap {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    padding-top: 36px;
+    padding-bottom: 30px;
+  }
+  h1 {
+    margin: 0 0 14px;
+    font-weight: 900;
+    font-stretch: 125%;
+    font-size: clamp(2.3rem, 9.5vw, 4.9rem);
+    line-height: .95;
+    letter-spacing: -.02em;
+    overflow-wrap: anywhere;
+  }
+  .when { margin: 0; font-weight: 800; font-size: 1.25rem; }
+  .facts { margin: 4px 0 0; max-width: 34ch; }
+  .court { flex: none; width: clamp(84px, 22vw, 168px); }
+  .court svg { display: block; width: 100%; height: auto; }
+  @media (prefers-reduced-motion: no-preference) {
+    .ball { transform-box: fill-box; transform-origin: center; animation: drop 1.1s cubic-bezier(.3,.7,.4,1) both; }
+    @keyframes drop {
+      0% { transform: translateY(-170px); }
+      45% { transform: translateY(0); }
+      62% { transform: translateY(-34px); }
+      78% { transform: translateY(0); }
+      88% { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
+    }
+  }
+
+  main { padding-bottom: 56px; }
+  section { margin-top: 30px; }
+  h2 { margin: 0 0 6px; font-size: 1.4rem; font-weight: 800; font-stretch: 112%; line-height: 1.2; }
+  p { margin: 0 0 10px; }
+  .muted { color: var(--muted); }
+
+  .card {
+    background: var(--card);
+    border: 2px solid var(--ink);
+    border-radius: 14px;
+    padding: 20px;
+  }
+
+  label { display: block; font-weight: 700; margin-bottom: 6px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  input[type="text"], input[type="password"] {
+    flex: 1 1 200px;
+    min-height: 52px;
+    padding: 10px 14px;
+    font: inherit;
+    font-size: 1.05rem;
+    color: var(--ink);
+    background: #fff;
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+  }
+  .btn {
+    min-height: 52px;
+    padding: 10px 20px;
+    font: inherit;
+    font-weight: 800;
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .btn:disabled { opacity: .55; cursor: not-allowed; }
+  .btn-red { background: var(--line); border-color: var(--line); color: #fff; }
+  .btn-danger { border-color: var(--line); color: var(--line); }
+  .btn-small { min-height: 38px; padding: 4px 12px; font-size: .9rem; }
+
+  .msg { min-height: 1.5em; margin: 10px 0 0; font-weight: 600; color: var(--line); }
+  .msg.ok { color: var(--ink); }
+
+  .me { margin-top: 14px; padding: 12px 14px; border-radius: 10px; background: var(--ball); font-weight: 600; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+
+  .players { list-style: none; padding: 0; margin: 10px 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 0 28px; }
+  .players li {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 10px 2px;
+    border-bottom: 1.5px solid rgba(21,24,27,.16);
+    font-weight: 600;
+    min-height: 48px;
+  }
+  .tag { background: var(--ball); font-size: .78rem; font-weight: 800; padding: 2px 9px; border-radius: 99px; }
+  .empty { padding: 18px; border: 2px dashed rgba(21,24,27,.35); border-radius: 12px; color: var(--muted); }
+
+  .status { display: inline-block; font-weight: 800; padding: 3px 12px; border-radius: 99px; border: 2px solid var(--ink); }
+  .status.open { background: var(--ball); }
+  .status.closed { background: var(--line); border-color: var(--line); color: #fff; }
+
+  dl.facts-list { margin: 12px 0 0; display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; }
+  dl.facts-list dt { font-weight: 700; }
+  dl.facts-list dd { margin: 0; }
+  .note { margin-top: 14px; padding: 12px 14px; border-radius: 10px; border-left: 6px solid var(--ink); background: #EEF0EA; }
+  .note.warn { border-left-color: var(--line); background: #FDEDEA; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+
+  footer { padding: 0 0 36px; text-align: center; font-size: .9rem; }
+  footer a { color: var(--muted); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div>
+      <h1>Squash-<br>turnering</h1>
+      <p class="when">Fredag 6. november</p>
+      <p class="facts">5 baner i 2 timer. Kampene spilles til 11 poeng, med 2 poengs margin.</p>
+    </div>
+    <div class="court" aria-hidden="true">
+      <svg viewBox="-4 -4 328 496" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="320" height="488" fill="var(--wood-light)" stroke="#15181B" stroke-width="6"/>
+        <g fill="none" stroke="#D3261C" stroke-width="5">
+          <line x1="0" y1="213" x2="320" y2="213"/>
+          <line x1="160" y1="213" x2="160" y2="488"/>
+          <rect x="0" y="213" width="80" height="80"/>
+          <rect x="240" y="213" width="80" height="80"/>
+        </g>
+        <g class="ball">
+          <circle cx="160" cy="213" r="17" fill="#15181B"/>
+          <circle cx="153" cy="207" r="4" fill="#F2CF1D"/>
+          <circle cx="167" cy="219" r="4" fill="#F2CF1D"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- Databasen mangler -->
+  <section id="setup" class="card" hidden>
+    <h2>Siden mangler database</h2>
+    <p id="setupText"></p>
+  </section>
+
+  <!-- Forside -->
+  <div id="view-public">
+    <section class="card" id="reg">
+      <h2>Meld deg på</h2>
+      <p id="regStatus"></p>
+      <form id="regForm" autocomplete="off">
+        <label for="name">Navn</label>
+        <div class="row">
+          <input type="text" id="name" maxlength="30" placeholder="Skriv inn ditt navn her" required>
+          <button class="btn btn-red" id="regBtn" type="submit">Meld meg på</button>
+        </div>
+      </form>
+      <p class="msg" id="msg" role="status" aria-live="polite"></p>
+      <div id="me"></div>
+    </section>
+
+    <section>
+      <h2 id="count">Påmeldte</h2>
+      <ul class="players" id="list"></ul>
+    </section>
+  </div>
+
+  <!-- Admin -->
+  <div id="view-admin" hidden>
+    <section class="card" id="pinCard" hidden>
+      <h2>Admin</h2>
+      <form id="pinForm">
+        <label for="pin">PIN</label>
+        <div class="row">
+          <input type="password" id="pin" inputmode="numeric" autocomplete="off">
+          <button class="btn btn-red" type="submit">Åpne</button>
+        </div>
+      </form>
+      <p class="msg" id="pinMsg" role="status" aria-live="polite"></p>
+    </section>
+
+    <div id="adminPanel" hidden>
+      <section class="card">
+        <h2>Påmelding</h2>
+        <p>Status: <span id="adminStatus"></span></p>
+        <div class="actions">
+          <button class="btn btn-red" data-action="toggle-reg" id="toggleRegBtn"></button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 id="adminCount">Spillere</h2>
+        <form id="addForm" autocomplete="off">
+          <label for="addName">Legg til spiller (for de som ikke melder seg selv)</label>
+          <div class="row">
+            <input type="text" id="addName" maxlength="30" placeholder="Navn">
+            <button class="btn" type="submit">Legg til</button>
+          </div>
+        </form>
+        <p class="msg" id="addMsg" role="status" aria-live="polite"></p>
+        <ul class="players" id="adminList"></ul>
+      </section>
+
+      <section class="card">
+        <h2>Tidsregnskap</h2>
+        <div id="plan"></div>
+      </section>
+
+      <section class="card">
+        <h2>Start turneringen</h2>
+        <p class="muted">Kampoppsettet bygger vi i neste steg.</p>
+        <button class="btn" disabled>Start turneringen</button>
+      </section>
+
+      <section class="card">
+        <h2>Nullstill</h2>
+        <p class="muted">Sletter alle spillere og åpner påmeldingen på nytt. Kan ikke angres.</p>
+        <button class="btn btn-danger" data-action="reset">Slett alt</button>
+      </section>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <a href="#admin" id="adminLink">Admin</a>
+  <a href="#" id="backLink" hidden>Tilbake til forsiden</a>
+</footer>
+
+<script>
+  // Rammene for dagen (brukes til tidsregnskapet i admin)
+  const COURTS = 5;
+  const SESSION_MIN = 120;
+  const MATCH_MIN = 15;
+  const POLL_MS = 4000;
+
+  const $ = (s) => document.querySelector(s);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  let players = [];
+  let settings = { registration_open: true, phase: 'registration' };
+  let lastSig = '';
+
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} }
+  };
+  const pin = {
+    get() { try { return sessionStorage.getItem('squash_pin'); } catch (e) { return null; } },
+    set(v) { try { v === null ? sessionStorage.removeItem('squash_pin') : sessionStorage.setItem('squash_pin', v); } catch (e) {} }
+  };
+  const myId = () => store.get('squash_me');
+  const adminOk = () => !!pin.get();
+
+  function say(el, text, ok) {
+    el.textContent = text || '';
+    el.classList.toggle('ok', !!ok);
+  }
+
+  // ---------- Kontakt med serveren ----------
+  async function api(path, body) {
+    let r;
+    try {
+      r = await fetch('/api/' + path, {
+        method: body ? 'POST' : 'GET',
+        headers: body ? { 'Content-Type': 'application/json' } : undefined,
+        body: body ? JSON.stringify(body) : undefined
+      });
+    } catch (e) {
+      throw Object.assign(new Error('Fikk ikke kontakt med serveren. Sjekk nettet og prøv igjen.'), { status: 0 });
+    }
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw Object.assign(new Error(data.error || 'Noe gikk galt. Prøv igjen.'), { status: r.status, code: data.code });
+    return data;
+  }
+
+  async function adminCall(action, extra) {
+    try {
+      return await api('admin', Object.assign({ pin: pin.get(), action }, extra));
+    } catch (e) {
+      if (e.status === 401) { pin.set(null); route(); }
+      throw e;
+    }
+  }
+
+  // ---------- Tidsregnskap ----------
+  function plan(n) {
+    if (n < 4) return null;
+    const slots = Math.floor(SESSION_MIN / MATCH_MIN);
+    const groupMatches = n; // to kamper hver = n kamper totalt
+    const groupRounds = Math.ceil(groupMatches / COURTS);
+    let B = 1; while (B < n) B *= 2;
+    const byes = B - n;
+    const koFirst = n - B / 2;
+    let koSlots = Math.ceil(koFirst / COURTS);
+    for (let m = B / 4; m >= 1; m /= 2) koSlots += Math.ceil(m / COURTS);
+    const total = groupRounds + koSlots;
+    const top8 = n > 8 ? groupRounds + 3 : null;
+    return { slots, groupMatches, groupRounds, sitOut: Math.max(0, n - 2 * COURTS), byes, koFirst, koSlots, total, top8 };
+  }
+
+  function planHtml(n) {
+    const p = plan(n);
+    if (!p) return `<p class="muted">Trenger minst 4 spillere for å regne ut tidsplanen. Nå er det ${n}.</p>`;
+    const mins = (x) => x * MATCH_MIN;
+    let verdict;
+    if (p.total > p.slots) {
+      verdict = `<div class="note warn"><strong>Det blir ikke plass til alt.</strong> Dere trenger ${p.total} tidsluker, men har ${p.slots}.</div>`;
+    } else if (p.total === p.slots) {
+      verdict = `<div class="note warn"><strong>Det går akkurat opp, uten slingringsmonn.</strong> Én kamp som drar ut, eller en pause, og dere går over tiden.</div>`;
+    } else {
+      verdict = `<div class="note"><strong>Det er plass.</strong> Dere har ${p.slots - p.total} tidsluker (${mins(p.slots - p.total)} min) til overs.</div>`;
+    }
+    let alt = '';
+    if (p.top8 !== null && p.total >= p.slots) {
+      alt = `<div class="note">Hvis bare topp 8 går videre til sluttspillet, blir det ${p.top8} tidsluker (${mins(p.top8)} min), altså ${p.slots - p.top8} til overs.</div>`;
+    }
+    return `
+      <dl class="facts-list">
+        <dt>Spillere</dt><dd>${n}</dd>
+        <dt>Gruppespill</dt><dd>${p.groupMatches} kamper i ${p.groupRounds} runder${p.sitOut ? `, ${p.sitOut} står over hver runde` : ''}</dd>
+        <dt>Sluttspill</dt><dd>${p.koFirst} kamper i første runde${p.byes ? `, ${p.byes} spillere går direkte videre` : ''}, så kvartfinaler, semifinaler og finale</dd>
+        <dt>Totalt</dt><dd>${p.total} av ${p.slots} tidsluker (${mins(p.total)} av ${SESSION_MIN} min)</dd>
+      </dl>
+      ${verdict}${alt}`;
+  }
+
+  // ---------- Tegning ----------
+  function render() {
+    const open = !!settings.registration_open;
+    const me = players.find((p) => p.id === myId());
+
+    // Forside
+    $('#regStatus').innerHTML = open
+      ? 'Påmeldingen er åpen.'
+      : 'Påmeldingen er stengt. Kampoppsettet kommer snart.';
+    $('#regForm').hidden = !open || !!me;
+    $('#me').innerHTML = me
+      ? `<div class="me"><span>Du er påmeldt som <strong>${esc(me.name)}</strong>.</span>${open ? '<button class="btn btn-small" data-action="leave">Meld meg av</button>' : ''}</div>`
+      : '';
+
+    $('#count').textContent = players.length === 1 ? '1 påmeldt' : `${players.length} påmeldte`;
+    $('#list').innerHTML = players.length
+      ? players.map((p) => `<li><span>${esc(p.name)}</span>${p.id === myId() ? '<span class="tag">deg</span>' : ''}</li>`).join('')
+      : '<li class="empty" style="display:block">Ingen er påmeldt ennå. Bli den første.</li>';
+
+    // Admin
+    $('#adminStatus').innerHTML = open ? '<span class="status open">Åpen</span>' : '<span class="status closed">Stengt</span>';
+    $('#toggleRegBtn').textContent = open ? 'Steng påmeldingen' : 'Åpne påmeldingen';
+    $('#adminCount').textContent = players.length === 1 ? '1 spiller' : `${players.length} spillere`;
+    $('#adminList').innerHTML = players.length
+      ? players.map((p) => `<li><span>${esc(p.name)}</span><button class="btn btn-danger btn-small" data-action="remove" data-id="${esc(p.id)}" aria-label="Fjern ${esc(p.name)}">Fjern</button></li>`).join('')
+      : '<li class="empty" style="display:block">Ingen spillere ennå.</li>';
+    $('#plan').innerHTML = planHtml(players.length);
+  }
+
+  function route() {
+    const admin = location.hash === '#admin';
+    $('#view-public').hidden = admin;
+    $('#view-admin').hidden = !admin;
+    $('#adminLink').hidden = admin;
+    $('#backLink').hidden = !admin;
+    if (admin) {
+      const ok = adminOk();
+      $('#pinCard').hidden = ok;
+      $('#adminPanel').hidden = !ok;
+      if (!ok) setTimeout(() => $('#pin').focus(), 0);
+    }
+  }
+
+  // ---------- Data ----------
+  async function load(force) {
+    let data;
+    try {
+      data = await api('state');
+    } catch (e) {
+      if (e.code === 'NO_DB') {
+        $('#setupText').textContent = e.message;
+        $('#setup').hidden = false;
+        $('#view-public').hidden = true;
+        $('#view-admin').hidden = true;
+      } else {
+        say($('#msg'), e.message);
+      }
+      return;
+    }
+    $('#setup').hidden = true;
+    route();
+    const sig = JSON.stringify([data.players, data.settings, myId()]);
+    if (!force && sig === lastSig) return;
+    lastSig = sig;
+    players = data.players;
+    settings = data.settings;
+    if (myId() && !players.some((x) => x.id === myId())) store.set('squash_me', null);
+    render();
+  }
+
+  // ---------- Hendelser ----------
+  $('#regForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = $('#msg');
+    const name = $('#name').value;
+    if (!name.trim()) return say(msg, 'Skriv inn navnet ditt.');
+    $('#regBtn').disabled = true;
+    try {
+      const { player } = await api('register', { name });
+      store.set('squash_me', player.id);
+      $('#name').value = '';
+      say(msg, 'Du er påmeldt.', true);
+      await load(true);
+    } catch (err) {
+      say(msg, err.message);
+      if (err.status === 403) load(true);
+    } finally {
+      $('#regBtn').disabled = false;
+    }
+  });
+
+  $('#pinForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const value = $('#pin').value;
+    say($('#pinMsg'), '');
+    try {
+      await api('admin', { pin: value, action: 'check' });
+      pin.set(value);
+      $('#pin').value = '';
+      route();
+      await load(true);
+    } catch (err) {
+      say($('#pinMsg'), err.message);
+    }
+  });
+
+  $('#addForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = $('#addMsg');
+    const name = $('#addName').value;
+    if (!name.trim()) return say(msg, 'Skriv inn et navn.');
+    try {
+      const { player } = await adminCall('add_player', { name });
+      $('#addName').value = '';
+      say(msg, `${player.name} er lagt til.`, true);
+      await load(true);
+    } catch (err) {
+      say(msg, err.message);
+    }
+  });
+
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const action = btn.dataset.action;
+
+    try {
+      if (action === 'leave') {
+        await api('leave', { id: myId() });
+        store.set('squash_me', null);
+        say($('#msg'), 'Du er meldt av.', true);
+        await load(true);
+      }
+
+      if (action === 'toggle-reg') {
+        await adminCall('set_registration', { open: !settings.registration_open });
+        await load(true);
+      }
+
+      if (action === 'remove') {
+        const p = players.find((x) => x.id === btn.dataset.id);
+        if (!p || !confirm(`Fjerne ${p.name}?`)) return;
+        await adminCall('remove_player', { id: p.id });
+        await load(true);
+      }
+
+      if (action === 'reset') {
+        if (!confirm('Slette alle spillere og starte på nytt? Dette kan ikke angres.')) return;
+        await adminCall('reset');
+        store.set('squash_me', null);
+        await load(true);
+      }
+    } catch (err) {
+      if (action === 'leave') { say($('#msg'), err.message); load(true); }
+      else alert(err.message);
+    }
+  });
+
+  window.addEventListener('hashchange', route);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
+
+  // ---------- Start ----------
+  route();
+  load(true);
+  setInterval(() => { if (!document.hidden) load(); }, POLL_MS);
+</script>
+</body>
+</html>

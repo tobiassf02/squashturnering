@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14272C">
+<title>Tobias' univers</title>
+<style>
+:root {
+  --natt: #14272C;
+  --teal: #2F4B52;
+  --krem: #F6EFE0;
+  --terrakotta: #C4694A;
+  --oker: #D9A441;
+  --rosa: #D8A7A0;
+  --blaa: #7B9BAE;
+  --oliven: #7A8160;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--natt);
+  color: var(--krem);
+  font-family: var(--sans);
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+canvas#univers { position: fixed; inset: 0; display: block; z-index: 0; }
+#vignett {
+  position: fixed; inset: 0; z-index: 4; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 45%, transparent 50%, rgba(6, 14, 18, 0.4) 100%);
+}
+#korn { position: fixed; inset: 0; z-index: 5; pointer-events: none; opacity: 0.3; mix-blend-mode: overlay; }
+
+#topp {
+  position: fixed; left: 0; right: 0; top: 0; z-index: 40;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: max(18px, env(safe-area-inset-top)) 22px 0;
+  pointer-events: none;
+}
+#topp > * { pointer-events: auto; }
+.merke { display: flex; flex-direction: column; gap: 2px; }
+.navn { font-family: var(--serif); font-size: 22px; letter-spacing: 0.02em; }
+.under { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.7; }
+
+.knapp {
+  font: inherit; font-size: 13px; color: var(--krem);
+  background: rgba(20, 39, 44, 0.45);
+  border: 1px solid rgba(246, 239, 224, 0.28);
+  border-radius: 999px; padding: 8px 14px; cursor: pointer;
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  transition: background 0.2s, border-color 0.2s, opacity 0.4s;
+}
+.knapp:hover { background: rgba(246, 239, 224, 0.14); border-color: rgba(246, 239, 224, 0.55); }
+.knapp:focus-visible, .hit:focus-visible, .lukk:focus-visible, .lenke:focus-visible {
+  outline: 2px solid var(--krem); outline-offset: 3px;
+}
+
+#tilbake {
+  position: fixed; z-index: 20; left: 22px; top: calc(max(18px, env(safe-area-inset-top)) + 58px);
+  opacity: 0; visibility: hidden;
+}
+#tilbake.synlig { opacity: 1; visibility: visible; }
+
+#tittel {
+  position: fixed; z-index: 15; left: 50%; top: calc(max(18px, env(safe-area-inset-top)) + 8px);
+  transform: translateX(-50%); text-align: center; pointer-events: none;
+  opacity: 0; transition: opacity 0.6s;
+}
+#tittel.synlig { opacity: 1; }
+#tittel h1 { font-family: var(--serif); font-weight: 400; font-size: 28px; margin: 0; text-shadow: 0 1px 16px rgba(8, 16, 20, 0.6); }
+#tittel p { margin: 3px 0 0; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.7; }
+
+#hint {
+  position: fixed; z-index: 15; left: 50%; bottom: max(26px, env(safe-area-inset-bottom));
+  transform: translateX(-50%); font-size: 13px; letter-spacing: 0.1em; opacity: 0;
+  transition: opacity 0.6s; pointer-events: none; text-shadow: 0 1px 12px rgba(8, 16, 20, 0.6);
+}
+#hint.synlig { opacity: 0.8; }
+
+#merkelag { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
+#merkelag > * { position: absolute; left: 0; top: 0; }
+.hit {
+  pointer-events: auto; border-radius: 50%; border: 0; padding: 0; margin: 0;
+  background: transparent; cursor: pointer; will-change: transform;
+}
+.hit:disabled { pointer-events: none; cursor: default; }
+.etikett {
+  text-align: center; pointer-events: none; white-space: nowrap;
+  text-shadow: 0 1px 14px rgba(8, 16, 20, 0.6); will-change: transform, opacity;
+}
+.e-navn { font-family: var(--serif); font-size: 20px; letter-spacing: 0.01em; transition: color 0.25s; }
+.e-under { display: block; font-size: 12px; opacity: 0.72; margin-top: 2px; }
+.etikett.pl .e-navn { font-size: 15px; }
+.etikett.hover .e-navn { color: #fff; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 5px; }
+.skjult { visibility: hidden; }
+
+#panel {
+  position: fixed; z-index: 30; top: 76px; right: 22px; bottom: 22px;
+  width: min(430px, 34vw); min-width: 340px; padding: 28px 26px 24px;
+  border-radius: 20px; background: rgba(22, 40, 46, 0.72);
+  -webkit-backdrop-filter: blur(18px) saturate(1.15); backdrop-filter: blur(18px) saturate(1.15);
+  border: 1px solid rgba(246, 239, 224, 0.16); box-shadow: 0 20px 60px rgba(4, 10, 14, 0.45);
+  overflow: auto; transform: translateX(calc(100% + 40px)); opacity: 0; visibility: hidden;
+  transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s, visibility 0s 0.7s;
+}
+#panel.apen {
+  transform: none; opacity: 1; visibility: visible;
+  transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.25s, opacity 0.5s 0.25s, visibility 0s;
+}
+.lukk {
+  position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; border-radius: 50%;
+  border: 1px solid rgba(246, 239, 224, 0.28); background: transparent; color: var(--krem);
+  font-size: 20px; line-height: 1; cursor: pointer;
+}
+.lukk:hover { background: rgba(246, 239, 224, 0.14); }
+.p-galakse { margin: 0 0 6px; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.65; }
+#panel h2 { font-family: var(--serif); font-weight: 400; font-size: 31px; line-height: 1.15; margin: 0 40px 14px 0; }
+#panel p.tekst { font-size: 15px; line-height: 1.65; margin: 0 0 18px; opacity: 0.92; }
+.tags { list-style: none; padding: 0; margin: 0 0 20px; display: flex; flex-wrap: wrap; gap: 8px; }
+.tags li { font-size: 12px; padding: 5px 11px; border-radius: 999px; border: 1px solid rgba(246, 239, 224, 0.3); }
+.lenker { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+.lenke {
+  display: inline-block; font-size: 14px; padding: 10px 16px; border-radius: 999px; text-decoration: none;
+  color: var(--natt); background: var(--krem);
+}
+.lenke:hover { background: #fff; }
+.utkast { font-size: 12px; opacity: 0.55; margin: 0; }
+
+#liste {
+  position: fixed; inset: 0; z-index: 25; overflow: auto; padding: 96px 22px 60px;
+  background: rgba(16, 30, 35, 0.97); display: none;
+}
+#liste.apen { display: block; }
+.liste-inner { max-width: 760px; margin: 0 auto; }
+.liste-inner h1 { font-family: var(--serif); font-weight: 400; font-size: 34px; margin: 0 0 6px; }
+.liste-inner > p { margin: 0 0 30px; opacity: 0.7; }
+.l-gruppe { margin: 0 0 34px; }
+.l-gruppe h2 { font-family: var(--serif); font-weight: 400; font-size: 22px; margin: 0 0 4px; }
+.l-gruppe .l-under { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.6; margin: 0 0 14px; }
+.l-kort { padding: 16px 18px; margin: 0 0 12px; border: 1px solid rgba(246, 239, 224, 0.16); border-radius: 14px; background: rgba(246, 239, 224, 0.04); }
+.l-kort h3 { font-family: var(--serif); font-weight: 400; font-size: 19px; margin: 0 0 6px; }
+.l-kort p { margin: 0 0 10px; font-size: 14px; line-height: 1.6; opacity: 0.9; }
+.l-kort .tags { margin: 0 0 8px; }
+
+@media (max-width: 760px) {
+  #panel { left: 12px; right: 12px; top: auto; bottom: 12px; width: auto; min-width: 0; max-height: 52vh; transform: translateY(calc(100% + 40px)); }
+  #panel h2 { font-size: 26px; }
+  #tilbake { left: 50%; top: auto; bottom: max(26px, env(safe-area-inset-bottom)); transform: translateX(-50%); }
+  #tittel { top: calc(max(18px, env(safe-area-inset-top)) + 54px); }
+  #tittel h1 { font-size: 24px; }
+  .e-navn { font-size: 17px; }
+}
+</style>
+</head>
+<body>
+<canvas id="univers" aria-hidden="true"></canvas>
+<div id="vignett"></div>
+<div id="korn"></div>
+
+<header id="topp">
+  <div class="merke">
+    <span class="navn">Tobias' univers</span>
+    <span class="under">Prosjekter</span>
+  </div>
+  <button class="knapp" id="listeKnapp" type="button">Vis som liste</button>
+</header>
+
+<div id="tittel"><h1 id="tTittel"></h1><p id="tUnder"></p></div>
+<button class="knapp" id="tilbake" type="button">← Tilbake til universet</button>
+<p id="hint" aria-live="polite"></p>
+<div id="merkelag"></div>
+
+<aside id="panel" role="dialog" aria-labelledby="pTittel" inert>
+  <button class="lukk" id="pLukk" type="button" aria-label="Lukk og gå tilbake til galaksen">×</button>
+  <p class="p-galakse" id="pGalakse"></p>
+  <h2 id="pTittel"></h2>
+  <p class="tekst" id="pTekst"></p>
+  <ul class="tags" id="pTags"></ul>
+  <div class="lenker" id="pLenker"></div>
+  <p class="utkast">Utkast. Teksten fylles inn med ekte detaljer og skjermbilder senere.</p>
+</aside>
+
+<section id="liste" aria-label="Alle prosjekter som liste">
+  <div class="liste-inner" id="listeInnhold"></div>
+</section>
+
+<script type="module">
+const reduser = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ------------------------------------------------------------------ */
+/* Hjelpefunksjoner                                                     */
+/* ------------------------------------------------------------------ */
+
+function rng(seed) {
+  let s = seed >>> 0;
+  return () => {
+    s = (s + 0x6D2B79F5) >>> 0;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function hash(str) {
+  let h = 2166136261;
+  for (const c of str) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function hexRgb(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+function rgba(hex, a) {
+  const [r, g, b] = hexRgb(hex);
+  return `rgba(${r},${g},${b},${a})`;
+}
+function col(arr, a) {
+  return `rgba(${arr[0] | 0},${arr[1] | 0},${arr[2] | 0},${a})`;
+}
+function mix(a, b, t) {
+  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+}
+function klem(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+/* ------------------------------------------------------------------ */
+/* Innhold: galakser og planeter (prosjekter)                          */
+/* ------------------------------------------------------------------ */
+
+const galakser = [
+  {
+    id: 'verktoy', stil: 'baner', navn: 'Hverdagsverktøy', under: 'Apper og widgets',
+    farge: '#8FB4CC', armer: 2, vind: 0.9, tilt: -0.35, flat: 0.6, spin: 0.05,
+    planeter: [
+      {
+        id: 'kjoleskap', navn: 'Digitalt kjøleskap',
+        tekst: 'Et delt kjøleskap i nettleseren. Skann strekkoden på varer, se utløpsdatoer i farger og flytt ting mellom avdelinger. Bygget i flere versjoner for ulike husholdninger, også en dansk.',
+        tags: ['Next.js', 'TypeScript', 'Supabase', 'Vercel'], lenker: [],
+        landskap: { skyTop: '#D8A7A0', skyBot: '#F1DCCB', sol: '#D9A441', solX: 0.5, solY: 0.3, aaser: ['#7A8160', '#2F4B52'], hus: true }
+      },
+      {
+        id: 'bank', navn: 'Bankdashboard',
+        tekst: 'Henter transaksjoner fra en bankkonto, kategoriserer dem automatisk og viser forbruket mot et månedsbudsjett. Oppdateres hver natt uten at noen maskin må stå på.',
+        tags: ['Node.js', 'Turso', 'Vercel', 'Enable Banking'], lenker: [],
+        landskap: { skyTop: '#7B9BAE', skyBot: '#CFE0E6', sol: '#F6EFE0', solX: 0.35, solY: 0.28, aaser: ['#2F4B52', '#1F3338'], vann: '#C4694A' }
+      },
+      {
+        id: 'widget', navn: 'Widget-mal',
+        tekst: 'Budsjettringen fra dashboardet, gjort om til en mal for iPhone-widgeter som fungerer uavhengig av hvilken bank eller datakilde du bruker.',
+        tags: ['Scriptable', 'JavaScript', 'iOS'], lenker: [],
+        landskap: { skyTop: '#D9A441', skyBot: '#F2D9A0', sol: '#C4694A', solX: 0.62, solY: 0.32, aaser: ['#7A8160', '#2F4B52'] }
+      }
+    ]
+  },
+  {
+    id: 'design', stil: 'linjer', navn: 'Design', under: 'Manual og nettsider',
+    farge: '#E8B4A8', armer: 3, vind: 0.7, tilt: 0.3, flat: 0.66, spin: 0.06,
+    planeter: [
+      {
+        id: 'designmanual', navn: 'Designmanual for Tryggbit',
+        tekst: 'Designmanual, presentasjon og infoside for casen Tryggbit, laget i faget Grafiske grunnprinsipper ved NTNU.',
+        tags: ['Figma', 'Typografi', 'Visuell identitet'], lenker: [],
+        landskap: { skyTop: '#2F4B52', skyBot: '#7B9BAE', sol: '#F6EFE0', solX: 0.45, solY: 0.3, aaser: ['#D8A7A0', '#C4694A'] }
+      },
+      {
+        id: 'gaveside', navn: 'Gavenettside',
+        tekst: 'En liten nettside som gave, med egen visuell stil, norsk tekst og en levende nedtelling.',
+        tags: ['HTML', 'CSS', 'JavaScript', 'GitHub Pages'], lenker: [],
+        landskap: { skyTop: '#E8D3A2', skyBot: '#F6EFE0', sol: '#D9A441', solX: 0.55, solY: 0.3, aaser: ['#D8A7A0', '#7A8160'] }
+      }
+    ]
+  },
+  {
+    id: 'kunst', stil: 'sky', navn: 'Kunst', under: 'Kode som tegner',
+    farge: '#E8B65A', armer: 2, vind: 1.1, tilt: -0.1, flat: 0.7, spin: 0.045,
+    planeter: [
+      {
+        id: 'landskap', navn: 'Generative landskap',
+        tekst: 'Landskap og byer som ikke finnes, tegnet med kode. Hver gang du klikker får du et nytt bilde du kan lagre som plakat.',
+        tags: ['Canvas', 'JavaScript', 'Generativ kunst'],
+        lenker: [{ tekst: 'Åpne generatoren', href: 'landskap.html' }],
+        landskap: { skyTop: '#C4694A', skyBot: '#E8B58E', sol: '#F6EFE0', solX: 0.4, solY: 0.3, aaser: ['#7B9BAE', '#2F4B52'], vann: '#7B9BAE' }
+      },
+      {
+        id: 'univers', navn: 'Dette universet',
+        tekst: 'Siden du er på nå. Galakser, planeter og et kamera som flyr mellom dem, tegnet i Canvas uten rammeverk.',
+        tags: ['Canvas', 'JavaScript', 'CSS'], lenker: [],
+        landskap: { skyTop: '#14272C', skyBot: '#4B6B73', sol: '#F6EFE0', solX: 0.5, solY: 0.32, aaser: ['#2F4B52', '#1F3338'], stjerner: true }
+      }
+    ]
+  }
+];
+for (const g of galakser) for (const p of g.planeter) p.galakse = g;
+
+/* ------------------------------------------------------------------ */
+/* Tilstand                                                             */
+/* ------------------------------------------------------------------ */
+
+const cvs = document.getElementById('univers');
+const ctx = cvs.getContext('2d');
+let W = 0, H = 0, DPR = 1, minD = 0, portrett = false;
+let t = 0;
+const L = {};
+const tilstand = { modus: 'oversikt', g: null, p: null, liste: false };
+const cam = { x: 0, y: 0, z: 1, lz: 0, lzVel: 0, xVel: 0, yVel: 0 };
+const camT = { x: 0, y: 0, lz: 0 };
+let px = 0, py = 0, pxT = 0, pyT = 0;
+const mus = { x: -100, y: -100, sx: -100, sy: -100, aktiv: false, spor: [] };
+let planetAlpha = 0, planetAlphaT = 0;
+let orbitFaktor = 1, orbitFaktorT = 1;
+let bgCanvas = null;
+let sistGalakse = null;
+
+/* ------------------------------------------------------------------ */
+/* Forhåndstegnede ting: galakse-sprites og planet-teksturer           */
+/* ------------------------------------------------------------------ */
+
+function lagGalaksesprite(g) {
+  const S = 640;
+  const c = document.createElement('canvas');
+  c.width = c.height = S;
+  const x = c.getContext('2d');
+  const R = rng(hash(g.id));
+  const cx = S / 2, cy = S / 2, rad = (S / 2) * 0.84;
+  const base = hexRgb(g.farge);
+  const krem = [246, 239, 224];
+
+  const glow = (px, py, r, farge, a) => {
+    const gr = x.createRadialGradient(px, py, 0, px, py, r);
+    gr.addColorStop(0, col(farge, a));
+    gr.addColorStop(1, col(farge, 0));
+    x.fillStyle = gr;
+    x.fillRect(px - r, py - r, r * 2, r * 2);
+  };
+
+  glow(cx, cy, S / 2, base, 0.26);
+
+  if (g.stil === 'baner') {
+    // C: lysende kjerne med tynne baner
+    x.lineWidth = 2.4;
+    [0.34, 0.56, 0.78, 1].forEach((f, i) => {
+      x.strokeStyle = col(krem, 0.34 - i * 0.05);
+      x.beginPath(); x.arc(cx, cy, rad * f, 0, Math.PI * 2); x.stroke();
+      const a = i * 1.9 + 0.6;
+      x.fillStyle = col(i % 2 ? krem : base, 0.95);
+      x.beginPath(); x.arc(cx + Math.cos(a) * rad * f, cy + Math.sin(a) * rad * f, 7 + (i % 2) * 3, 0, Math.PI * 2); x.fill();
+    });
+  } else if (g.stil === 'linjer') {
+    // D: tynne linjetegnede spiralarmer
+    x.lineCap = 'round';
+    for (let arm = 0; arm < g.armer; arm++) {
+      for (let k = 0; k < 3; k++) {
+        x.beginPath();
+        for (let tt = 0; tt <= 1.001; tt += 0.01) {
+          const ang = arm * (Math.PI * 2 / g.armer) + tt * g.vind * Math.PI * 2 + k * 0.08;
+          const d = 24 + tt * (rad - 24);
+          const px_ = cx + Math.cos(ang) * d, py_ = cy + Math.sin(ang) * d;
+          if (tt === 0) x.moveTo(px_, py_); else x.lineTo(px_, py_);
+        }
+        x.strokeStyle = col(krem, 0.7 - k * 0.2);
+        x.lineWidth = 2.6 - k * 0.6;
+        x.stroke();
+      }
+    }
+  } else {
+    // F: tåkesky med noen få stjerner
+    x.globalCompositeOperation = 'lighter';
+    const farger = [base, mix(base, [216, 167, 160], 0.6), mix(base, krem, 0.4)];
+    for (let i = 0; i < 26; i++) {
+      const ang = R() * Math.PI * 2, d = Math.pow(R(), 0.6) * rad * 0.7;
+      glow(cx + Math.cos(ang) * d, cy + Math.sin(ang) * d, 70 + R() * 90, farger[i % 3], 0.16);
+    }
+    x.globalCompositeOperation = 'source-over';
+    for (let i = 0; i < 40; i++) {
+      const ang = R() * Math.PI * 2, d = Math.pow(R(), 0.7) * rad;
+      x.fillStyle = col(krem, 0.5 + R() * 0.45);
+      x.beginPath(); x.arc(cx + Math.cos(ang) * d, cy + Math.sin(ang) * d, 1.8 + R() * 2.4, 0, Math.PI * 2); x.fill();
+    }
+  }
+
+  // B: glødende kjerne i alle
+  glow(cx, cy, 120, base, 0.55);
+  glow(cx, cy, 70, mix(krem, base, 0.25), 0.9);
+  glow(cx, cy, 36, krem, 1);
+  return c;
+}
+
+const TW = 1024, TH = 512;
+
+function lagTekstur(p) {
+  const Ls = p.landskap;
+  const R = rng(hash(p.id));
+  const c = document.createElement('canvas');
+  c.width = TW + TH;
+  c.height = TH;
+  const g = c.getContext('2d');
+
+  const himmel = g.createLinearGradient(0, 0, 0, TH * 0.8);
+  himmel.addColorStop(0, Ls.skyTop);
+  himmel.addColorStop(1, Ls.skyBot);
+  g.fillStyle = himmel;
+  g.fillRect(0, 0, c.width, TH);
+
+  const kopier = [0, TW];
+
+  if (Ls.stjerner) {
+    for (let i = 0; i < 70; i++) {
+      const sx = R() * TW, sy = R() * TH * 0.6, sr = 0.8 + R() * 1.8;
+      g.fillStyle = `rgba(246,239,224,${0.4 + R() * 0.5})`;
+      for (const off of kopier) { g.beginPath(); g.arc(sx + off, sy, sr, 0, Math.PI * 2); g.fill(); }
+    }
+  }
+
+  g.lineCap = 'round';
+  for (let i = 0; i < 4; i++) {
+    const cx = R() * TW, cy = TH * (0.1 + R() * 0.25), len = 90 + R() * 140;
+    g.strokeStyle = 'rgba(255,255,255,0.32)';
+    g.lineWidth = TH * (0.018 + R() * 0.02);
+    for (const off of kopier) { g.beginPath(); g.moveTo(cx + off, cy); g.lineTo(cx + off + len, cy); g.stroke(); }
+  }
+
+  const sr = TH * 0.075;
+  for (const off of kopier) {
+    const sx = Ls.solX * TW + off, sy = Ls.solY * TH;
+    const gl = g.createRadialGradient(sx, sy, sr * 0.4, sx, sy, sr * 3.2);
+    gl.addColorStop(0, rgba(Ls.sol, 0.55));
+    gl.addColorStop(1, rgba(Ls.sol, 0));
+    g.fillStyle = gl;
+    g.fillRect(sx - sr * 3.2, sy - sr * 3.2, sr * 6.4, sr * 6.4);
+    g.fillStyle = Ls.sol;
+    g.beginPath(); g.arc(sx, sy, sr, 0, Math.PI * 2); g.fill();
+  }
+
+  const rygger = [];
+  Ls.aaser.forEach((farge, j) => {
+    const base = TH * (0.54 + 0.14 * j);
+    const komp = [
+      [1, TH * 0.04, R() * 6.28], [2, TH * 0.025, R() * 6.28],
+      [3, TH * 0.012, R() * 6.28], [5, TH * 0.006, R() * 6.28]
+    ];
+    const rygg = (x) => {
+      let y = base;
+      for (const [k, a, ph] of komp) y += a * Math.sin(2 * Math.PI * k * x / TW + ph);
+      return y;
+    };
+    rygger.push(rygg);
+    g.fillStyle = farge;
+    g.beginPath();
+    g.moveTo(0, TH);
+    for (let x = 0; x <= TW + TH; x += 6) g.lineTo(x, rygg(x));
+    g.lineTo(TW + TH, TH);
+    g.closePath();
+    g.fill();
+  });
+
+  if (Ls.vann) {
+    const y0 = TH * 0.8;
+    g.fillStyle = rgba(Ls.vann, 0.88);
+    g.fillRect(0, y0, c.width, TH - y0);
+    g.strokeStyle = 'rgba(255,255,255,0.28)';
+    g.lineWidth = 2;
+    for (let i = 0; i < 40; i++) {
+      const wy = y0 + 8 + R() * (TH - y0 - 12), wx = R() * TW, len = 30 + R() * 90;
+      for (const off of kopier) { g.beginPath(); g.moveTo(wx + off, wy); g.lineTo(wx + off + len, wy); g.stroke(); }
+    }
+  }
+
+  if (Ls.hus) {
+    const rygg = rygger[Math.min(1, rygger.length - 1)];
+    const veggfarger = ['#F6EFE0', '#D9A441', '#D8A7A0', '#C4694A'];
+    const takfarger = ['#C4694A', '#2F4B52'];
+    for (let i = 0; i < 8; i++) {
+      const hx = TW * (0.16 + 0.68 * (i / 7)) + (R() - 0.5) * 20;
+      const hw = 20 + R() * 14, hh = hw * (0.8 + R() * 0.3);
+      const hy = rygg(hx) + 6;
+      const vegg = veggfarger[Math.floor(R() * veggfarger.length)];
+      let tak = takfarger[Math.floor(R() * takfarger.length)];
+      if (tak === vegg) tak = '#2F4B52';
+      for (const off of kopier) {
+        g.fillStyle = vegg;
+        g.fillRect(hx - hw / 2 + off, hy - hh, hw, hh);
+        g.fillStyle = tak;
+        g.beginPath();
+        g.moveTo(hx - hw * 0.62 + off, hy - hh);
+        g.lineTo(hx + hw * 0.62 + off, hy - hh);
+        g.lineTo(hx + off, hy - hh - hw * 0.5);
+        g.closePath();
+        g.fill();
+      }
+    }
+  }
+
+  for (let i = 0; i < 9000; i++) {
+    g.fillStyle = R() < 0.5 ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.06)';
+    g.fillRect(R() * c.width, R() * TH, 1.5, 1.5);
+  }
+  return c;
+}
+
+for (const g of galakser) {
+  g.sprite = lagGalaksesprite(g);
+  g.spinVinkel = hash(g.id) % 6;
+  g.fase = (hash(g.id) % 100) / 16;
+  g.alpha = 1; g.alphaT = 1; g.hover = 0; g.hoverT = 0; g.dx = 0; g.dy = 0;
+  for (const p of g.planeter) {
+    p.tekstur = lagTekstur(p);
+    p.hover = 0; p.hoverT = 0; p.alpha = 0; p.alphaT = 0;
+    p.rotFart = 0.012 + (hash(p.id) % 7) * 0.002;
+    p.rotOff = (hash(p.id) % 100) / 100;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Stjerner, tåke og stjerneskudd                                       */
+/* ------------------------------------------------------------------ */
+
+const stjerner = [];
+{
+  const R = rng(20261022);
+  const farger = ['#F6EFE0', '#F6EFE0', '#F6EFE0', '#E8B4A8', '#F2D49A', '#B9D3E4'];
+  for (let i = 0; i < 280; i++) {
+    const d = 0.12 + Math.pow(R(), 1.4) * 0.88;
+    stjerner.push({
+      x: (R() - 0.5) * 1.1, y: (R() - 0.5) * 1.1, d,
+      r: 0.35 + d * 1.25, a: 0.35 + R() * 0.55,
+      sp: 0.6 + R() * 1.8, ph: R() * 6.28, col: farger[Math.floor(R() * farger.length)]
+    });
+  }
+}
+const taaker = [
+  { x: -0.3, y: -0.2, r: 0.55, c: '#7B9BAE', a: 0.2, f: 0.7 },
+  { x: 0.35, y: 0.1, r: 0.5, c: '#D8A7A0', a: 0.18, f: 1.9 },
+  { x: -0.1, y: 0.4, r: 0.6, c: '#C4694A', a: 0.16, f: 3.1 },
+  { x: 0.2, y: -0.38, r: 0.45, c: '#D9A441', a: 0.07, f: 4.4 }
+];
+const stjerneskudd = [];
+let neste = 4;
+
+/* ------------------------------------------------------------------ */
+/* Layout                                                               */
+/* ------------------------------------------------------------------ */
+
+function oppsett() {
+  W = window.innerWidth; H = window.innerHeight;
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  cvs.width = Math.round(W * DPR); cvs.height = Math.round(H * DPR);
+  cvs.style.width = W + 'px'; cvs.style.height = H + 'px';
+  minD = Math.min(W, H);
+  portrett = H > W * 1.05 || W < 760;
+
+  L.gR = portrett ? Math.min(W * 0.22, H * 0.1) : Math.min(H * 0.21, W * 0.105);
+  const pos = portrett
+    ? [[-0.12 * W, -0.26 * H], [0.1 * W, 0.03 * H], [-0.08 * W, 0.3 * H]]
+    : [[-0.29 * W, -0.04 * H], [0, 0.07 * H], [0.29 * W, -0.02 * H]];
+  galakser.forEach((g, i) => { g.x = pos[i][0]; g.y = pos[i][1]; g.R = L.gR; });
+
+  L.zT = portrett ? 1.3 : 1.6;
+  L.rxMaks = portrett ? W * 0.4 : Math.min(W * 0.38, H * 0.85);
+  L.forhold = portrett ? 0.78 : 0.4;
+  L.tiltOrbit = portrett ? 0 : -0.16;
+  L.planetR = klem(minD * 0.072, 28, 64) / L.zT;
+  const maalR = portrett ? Math.min(W * 0.2, 80) : Math.min(H * 0.15, 130);
+  L.zP = maalR / L.planetR;
+  L.panelW = portrett ? 0 : Math.max(340, Math.min(430, W * 0.34));
+
+  for (const g of galakser) {
+    const n = g.planeter.length;
+    g.planeter.forEach((p, i) => {
+      const rxScr = L.rxMaks * (n === 1 ? 1 : 0.52 + 0.48 * (i / (n - 1)));
+      p.rx = rxScr / L.zT;
+      p.ry = p.rx * L.forhold;
+      if (p.a === undefined) p.a = (i * Math.PI * 2) / n + (hash(g.id) % 10) / 5;
+      p.fart = (0.15 - 0.035 * i) * (i % 2 ? 0.9 : 1);
+    });
+  }
+
+  bgCanvas = lagBakgrunn();
+  tegnKornFlis();
+  maal();
+}
+
+function lagBakgrunn() {
+  const c = document.createElement('canvas');
+  c.width = Math.round(W * DPR); c.height = Math.round(H * DPR);
+  const x = c.getContext('2d');
+  x.scale(DPR, DPR);
+  const gr = x.createLinearGradient(0, 0, 0, H);
+  gr.addColorStop(0, '#0A2128');
+  gr.addColorStop(0.45, '#17454F');
+  gr.addColorStop(0.78, '#6E4A58');
+  gr.addColorStop(1, '#D0775A');
+  x.fillStyle = gr;
+  x.fillRect(0, 0, W, H);
+  const glod = x.createRadialGradient(W / 2, H * 1.05, 0, W / 2, H * 1.05, Math.max(W, H) * 0.75);
+  glod.addColorStop(0, 'rgba(232,160,140,0.45)');
+  glod.addColorStop(0.5, 'rgba(196,105,74,0.14)');
+  glod.addColorStop(1, 'rgba(196,105,74,0)');
+  x.fillStyle = glod;
+  x.fillRect(0, 0, W, H);
+  return c;
+}
+
+function tegnKornFlis() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 160;
+  const x = c.getContext('2d');
+  const id = x.createImageData(160, 160);
+  const R = rng(7);
+  for (let i = 0; i < id.data.length; i += 4) {
+    const v = R() * 255;
+    id.data[i] = id.data[i + 1] = id.data[i + 2] = v;
+    id.data[i + 3] = 40;
+  }
+  x.putImageData(id, 0, 0);
+  document.getElementById('korn').style.backgroundImage = `url(${c.toDataURL()})`;
+}
+
+/* ------------------------------------------------------------------ */
+/* Posisjoner og kamera                                                 */
+/* ------------------------------------------------------------------ */
+
+function galakseSenter(g) { return [g.x + g.dx, g.y + g.dy]; }
+
+function planetVerden(p) {
+  const [gx, gy] = galakseSenter(p.galakse);
+  const ox = p.rx * Math.cos(p.a), oy = p.ry * Math.sin(p.a);
+  const c = Math.cos(L.tiltOrbit), s = Math.sin(L.tiltOrbit);
+  return [gx + ox * c - oy * s, gy + ox * s + oy * c, Math.sin(p.a)];
+}
+
+function maal() {
+  const m = tilstand.modus;
+  if (m === 'oversikt') {
+    camT.x = 0; camT.y = 0; camT.lz = 0;
+  } else if (m === 'galakse') {
+    const [gx, gy] = galakseSenter(tilstand.g);
+    camT.x = gx; camT.y = gy; camT.lz = Math.log(L.zT);
+  } else {
+    const [wx, wy] = planetVerden(tilstand.p);
+    const sx = portrett ? W * 0.5 : (W - L.panelW - 40) / 2;
+    const sy = portrett ? H * 0.27 : H * 0.5;
+    camT.x = wx - (sx - W / 2) / L.zP;
+    camT.y = wy - (sy - H / 2) / L.zP;
+    camT.lz = Math.log(L.zP);
+  }
+  for (const g of galakser) {
+    g.alphaT = m === 'oversikt' ? 1 : g === tilstand.g ? (m === 'galakse' ? 0.55 : 0.28) : 0;
+    for (const p of g.planeter) {
+      p.alphaT = m === 'oversikt' ? 0 : g !== tilstand.g ? 0 : (m === 'planet' && p !== tilstand.p ? 0.45 : 1);
+    }
+  }
+  planetAlphaT = m === 'oversikt' ? 0 : 1;
+  orbitFaktorT = m === 'planet' ? 0 : 1;
+}
+
+function fjær(v, vel, mal, dt) {
+  const a = 40 * (mal - v) - 12 * vel;
+  vel += a * dt;
+  return [v + vel * dt, vel];
+}
+
+/* ------------------------------------------------------------------ */
+/* Navigasjon og grensesnitt                                            */
+/* ------------------------------------------------------------------ */
+
+const el = {
+  tilbake: document.getElementById('tilbake'),
+  hint: document.getElementById('hint'),
+  tittel: document.getElementById('tittel'),
+  tTittel: document.getElementById('tTittel'),
+  tUnder: document.getElementById('tUnder'),
+  panel: document.getElementById('panel'),
+  pGalakse: document.getElementById('pGalakse'),
+  pTittel: document.getElementById('pTittel'),
+  pTekst: document.getElementById('pTekst'),
+  pTags: document.getElementById('pTags'),
+  pLenker: document.getElementById('pLenker'),
+  listeKnapp: document.getElementById('listeKnapp'),
+  liste: document.getElementById('liste'),
+  merkelag: document.getElementById('merkelag')
+};
+
+function oppdaterUI() {
+  const m = tilstand.modus;
+  el.hint.textContent = m === 'oversikt' ? 'Velg en galakse' : m === 'galakse' ? 'Velg en planet' : '';
+  el.hint.classList.toggle('synlig', m !== 'planet' && !tilstand.liste);
+  el.tilbake.classList.toggle('synlig', m === 'galakse' && !tilstand.liste);
+  if (tilstand.g) {
+    el.tTittel.textContent = tilstand.g.navn;
+    el.tUnder.textContent = tilstand.g.under;
+  }
+  el.tittel.classList.toggle('synlig', m === 'galakse' && !tilstand.liste);
+
+  if (m === 'planet') {
+    const p = tilstand.p;
+    el.pGalakse.textContent = `Galakse · ${p.galakse.navn}`;
+    el.pTittel.textContent = p.navn;
+    el.pTekst.textContent = p.tekst;
+    el.pTags.replaceChildren(...p.tags.map(tag => { const li = document.createElement('li'); li.textContent = tag; return li; }));
+    el.pLenker.replaceChildren(...p.lenker.map(l => {
+      const a = document.createElement('a');
+      a.className = 'lenke'; a.href = l.href; a.textContent = l.tekst + ' →';
+      return a;
+    }));
+    el.panel.classList.add('apen');
+    el.panel.inert = false;
+  } else {
+    el.panel.classList.remove('apen');
+    el.panel.inert = true;
+  }
+}
+
+function settHash() {
+  const m = tilstand.modus;
+  const h = m === 'oversikt' ? '' : m === 'galakse' ? `#/${tilstand.g.id}` : `#/${tilstand.g.id}/${tilstand.p.id}`;
+  history.replaceState(null, '', location.pathname + location.search + h);
+}
+
+function gaaTil(modus, g = null, p = null, direkte = false) {
+  tilstand.modus = modus;
+  if (g) tilstand.g = g;
+  tilstand.p = p;
+  if (modus !== 'oversikt') sistGalakse = tilstand.g;
+  maal();
+  oppdaterUI();
+  settHash();
+  if (direkte) {
+    cam.x = camT.x; cam.y = camT.y; cam.lz = camT.lz; cam.z = Math.exp(cam.lz);
+    cam.xVel = cam.yVel = cam.lzVel = 0;
+    planetAlpha = planetAlphaT; orbitFaktor = orbitFaktorT;
+    for (const gg of galakser) { gg.alpha = gg.alphaT; for (const pp of gg.planeter) pp.alpha = pp.alphaT; }
+  }
+}
+
+function tilbake() {
+  if (tilstand.modus === 'planet') gaaTil('galakse', tilstand.g);
+  else if (tilstand.modus === 'galakse') gaaTil('oversikt');
+}
+
+function fraHash() {
+  const [, gid, pid] = location.hash.split('/');
+  const g = galakser.find(x => x.id === gid);
+  if (!g) return;
+  const p = g.planeter.find(x => x.id === pid);
+  if (p) gaaTil('planet', g, p, true);
+  else gaaTil('galakse', g, null, true);
+}
+
+/* Etiketter og klikkflater (ekte knapper, tilgjengelige med tastatur) */
+
+function lagMerke(tekstNavn, tekstUnder, ariaLabel, ekstra, onKlikk, onHover) {
+  const hit = document.createElement('button');
+  hit.className = 'hit'; hit.type = 'button'; hit.setAttribute('aria-label', ariaLabel);
+  const et = document.createElement('div');
+  et.className = 'etikett ' + ekstra; et.setAttribute('aria-hidden', 'true');
+  const n = document.createElement('span'); n.className = 'e-navn'; n.textContent = tekstNavn;
+  et.appendChild(n);
+  if (tekstUnder) { const u = document.createElement('span'); u.className = 'e-under'; u.textContent = tekstUnder; et.appendChild(u); }
+  hit.addEventListener('click', onKlikk);
+  hit.addEventListener('pointerenter', () => onHover(1));
+  hit.addEventListener('pointerleave', () => onHover(0));
+  hit.addEventListener('focus', () => onHover(1));
+  hit.addEventListener('blur', () => onHover(0));
+  el.merkelag.append(hit, et);
+  return { hit, et };
+}
+
+for (const g of galakser) {
+  g.dom = lagMerke(g.navn, g.under, `Åpne galaksen ${g.navn}`, 'gl', () => gaaTil('galakse', g), v => { g.hoverT = v; });
+  for (const p of g.planeter) {
+    p.dom = lagMerke(p.navn, '', `Åpne prosjektet ${p.navn}`, 'pl', () => gaaTil('planet', g, p), v => { p.hoverT = v; });
+  }
+}
+
+function plasserMerke(dom, x, y, d, etY, alpha, aktiv) {
+  const synlig = alpha > 0.04;
+  dom.hit.style.width = dom.hit.style.height = d.toFixed(0) + 'px';
+  dom.hit.style.transform = `translate(${(x - d / 2).toFixed(1)}px,${(y - d / 2).toFixed(1)}px)`;
+  dom.hit.disabled = !aktiv || alpha < 0.5;
+  dom.hit.classList.toggle('skjult', !synlig);
+  dom.et.style.transform = `translate(${x.toFixed(1)}px,${etY.toFixed(1)}px) translate(-50%,0)`;
+  dom.et.style.opacity = alpha.toFixed(2);
+  dom.et.classList.toggle('skjult', !synlig);
+}
+
+/* Listevisning */
+
+function byggListe() {
+  const rot = document.getElementById('listeInnhold');
+  const h1 = document.createElement('h1'); h1.textContent = 'Prosjekter';
+  const intro = document.createElement('p'); intro.textContent = 'Alt samlet på ett sted, uten reisen gjennom universet.';
+  const tb = document.createElement('button');
+  tb.className = 'knapp'; tb.type = 'button'; tb.textContent = '← Tilbake til universet';
+  tb.style.marginBottom = '22px';
+  tb.addEventListener('click', () => { if (tilstand.liste) veksleListe(); });
+  rot.append(tb, h1, intro);
+  for (const g of galakser) {
+    const gr = document.createElement('div'); gr.className = 'l-gruppe';
+    gr.innerHTML = `<h2></h2><p class="l-under"></p>`;
+    gr.querySelector('h2').textContent = g.navn;
+    gr.querySelector('.l-under').textContent = g.under;
+    for (const p of g.planeter) {
+      const k = document.createElement('div'); k.className = 'l-kort';
+      const h3 = document.createElement('h3'); h3.textContent = p.navn;
+      const tx = document.createElement('p'); tx.textContent = p.tekst;
+      const ul = document.createElement('ul'); ul.className = 'tags';
+      for (const tag of p.tags) { const li = document.createElement('li'); li.textContent = tag; ul.appendChild(li); }
+      k.append(h3, tx, ul);
+      for (const l of p.lenker) {
+        const a = document.createElement('a'); a.className = 'lenke'; a.href = l.href; a.textContent = l.tekst + ' →'; k.appendChild(a);
+      }
+      gr.appendChild(k);
+    }
+    rot.appendChild(gr);
+  }
+}
+byggListe();
+
+function veksleListe() {
+  tilstand.liste = !tilstand.liste;
+  el.liste.classList.toggle('apen', tilstand.liste);
+  el.listeKnapp.textContent = tilstand.liste ? 'Vis universet' : 'Vis som liste';
+  el.merkelag.style.visibility = tilstand.liste ? 'hidden' : '';
+  oppdaterUI();
+}
+
+el.tilbake.addEventListener('click', tilbake);
+document.getElementById('pLukk').addEventListener('click', tilbake);
+el.listeKnapp.addEventListener('click', veksleListe);
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (tilstand.liste) veksleListe(); else tilbake();
+  }
+});
+window.addEventListener('pointermove', e => {
+  if (e.pointerType === 'mouse') {
+    if (!mus.aktiv) { mus.sx = e.clientX; mus.sy = e.clientY; }
+    mus.aktiv = true; mus.x = e.clientX; mus.y = e.clientY;
+  }
+  pxT = (e.clientX / W - 0.5) * 2;
+  pyT = (e.clientY / H - 0.5) * 2;
+});
+window.addEventListener('resize', oppsett);
+document.documentElement.addEventListener('pointerleave', () => { mus.aktiv = false; });
+window.addEventListener('hashchange', () => { fraHash(); });
+
+/* ------------------------------------------------------------------ */
+/* Tegning                                                              */
+/* ------------------------------------------------------------------ */
+
+function tegnNebula() {
+  ctx.globalCompositeOperation = 'screen';
+  const SS = Math.max(W, H);
+  for (const n of taaker) {
+    const x = W / 2 + (n.x + Math.sin(t * 0.03 + n.f) * 0.04) * SS - cam.x * 0.04 - px * 8;
+    const y = H / 2 + (n.y + Math.cos(t * 0.025 + n.f) * 0.04) * SS - cam.y * 0.04 - py * 6;
+    const r = n.r * SS;
+    const gr = ctx.createRadialGradient(x, y, 0, x, y, r);
+    gr.addColorStop(0, rgba(n.c, n.a));
+    gr.addColorStop(1, rgba(n.c, 0));
+    ctx.fillStyle = gr;
+    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+function tegnStjerner() {
+  const SS = Math.max(W, H);
+  const k = reduser ? 0 : Math.min(0.4, Math.abs(cam.lzVel) * 0.28);
+  const dir = Math.sign(cam.lzVel);
+  for (const s of stjerner) {
+    const zf = 1 + (cam.z - 1) * 0.22 * s.d;
+    const x = W / 2 + s.x * SS * 1.9 * zf - cam.x * 0.18 * s.d - px * 18 * s.d;
+    const y = H / 2 + s.y * SS * 1.9 * zf - cam.y * 0.18 * s.d - py * 14 * s.d;
+    if (x < -30 || x > W + 30 || y < -30 || y > H + 30) continue;
+    const tw = reduser ? 1 : 0.7 + 0.3 * Math.sin(t * s.sp + s.ph);
+    ctx.globalAlpha = s.a * tw;
+    if (k > 0.015) {
+      const dx = x - W / 2, dy = y - H / 2;
+      ctx.strokeStyle = s.col;
+      ctx.lineWidth = s.r * 1.1;
+      ctx.beginPath();
+      ctx.moveTo(x - dir * dx * k * s.d, y - dir * dy * k * s.d);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = s.col;
+      ctx.beginPath();
+      ctx.arc(x, y, s.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+function tegnStjerneskudd(dt) {
+  if (!reduser) {
+    neste -= dt;
+    if (neste <= 0) {
+      neste = 7 + Math.random() * 9;
+      const vinkel = Math.PI * (0.12 + Math.random() * 0.12);
+      stjerneskudd.push({
+        x: W * (0.15 + Math.random() * 0.7), y: H * (0.05 + Math.random() * 0.3),
+        vx: Math.cos(vinkel) * W * 0.7, vy: Math.sin(vinkel) * W * 0.7, liv: 0, maks: 0.9
+      });
+    }
+  }
+  ctx.globalCompositeOperation = 'lighter';
+  for (let i = stjerneskudd.length - 1; i >= 0; i--) {
+    const s = stjerneskudd[i];
+    s.liv += dt; s.x += s.vx * dt; s.y += s.vy * dt;
+    if (s.liv > s.maks) { stjerneskudd.splice(i, 1); continue; }
+    const a = Math.sin((s.liv / s.maks) * Math.PI);
+    const gr = ctx.createLinearGradient(s.x, s.y, s.x - s.vx * 0.18, s.y - s.vy * 0.18);
+    gr.addColorStop(0, `rgba(246,239,224,${0.9 * a})`);
+    gr.addColorStop(1, 'rgba(246,239,224,0)');
+    ctx.strokeStyle = gr; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(s.x, s.y);
+    ctx.lineTo(s.x - s.vx * 0.18, s.y - s.vy * 0.18);
+    ctx.stroke();
+  }
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+function tegnMus(dt) {
+  const f = 1 - Math.exp(-dt * (reduser ? 40 : 14));
+  mus.sx += (mus.x - mus.sx) * f;
+  mus.sy += (mus.y - mus.sy) * f;
+  if (mus.aktiv && !reduser) {
+    mus.spor.push({ x: mus.sx, y: mus.sy, a: 1, vx: (Math.random() - 0.5) * 18, vy: (Math.random() - 0.5) * 18 });
+  }
+  for (let i = mus.spor.length - 1; i >= 0; i--) {
+    const p = mus.spor[i];
+    p.a -= dt * 1.8; p.x += p.vx * dt; p.y += p.vy * dt;
+    if (p.a <= 0) mus.spor.splice(i, 1);
+  }
+  if (mus.spor.length > 70) mus.spor.splice(0, mus.spor.length - 70);
+  ctx.globalCompositeOperation = 'lighter';
+  for (const p of mus.spor) {
+    const r = 1 + 5 * p.a;
+    const gr = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 2.2);
+    gr.addColorStop(0, `rgba(242,212,154,${0.45 * p.a})`);
+    gr.addColorStop(1, 'rgba(242,212,154,0)');
+    ctx.fillStyle = gr;
+    ctx.fillRect(p.x - r * 2.2, p.y - r * 2.2, r * 4.4, r * 4.4);
+  }
+  if (mus.aktiv) {
+    const R = 26;
+    const gr = ctx.createRadialGradient(mus.sx, mus.sy, 0, mus.sx, mus.sy, R);
+    gr.addColorStop(0, 'rgba(255,244,220,0.9)');
+    gr.addColorStop(0.18, 'rgba(255,230,180,0.5)');
+    gr.addColorStop(1, 'rgba(255,230,180,0)');
+    ctx.fillStyle = gr;
+    ctx.fillRect(mus.sx - R, mus.sy - R, R * 2, R * 2);
+  }
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+function tilSkjerm(wx, wy, par) {
+  return [W / 2 + (wx - cam.x) * cam.z + par[0], H / 2 + (wy - cam.y) * cam.z + par[1]];
+}
+
+function tegnGalakse(g) {
+  if (g.alpha < 0.01) return;
+  const par = [-px * 14, -py * 10];
+  const [gx, gy] = galakseSenter(g);
+  const [sx, sy] = tilSkjerm(gx, gy, par);
+  const R = g.R * cam.z * (1 + 0.2 * g.hover);
+  const base = hexRgb(g.farge);
+
+  ctx.globalCompositeOperation = 'lighter';
+  const gl = ctx.createRadialGradient(sx, sy, 0, sx, sy, R * 1.7);
+  gl.addColorStop(0, col(base, (0.2 + 0.2 * g.hover) * g.alpha));
+  gl.addColorStop(1, col(base, 0));
+  ctx.fillStyle = gl;
+  ctx.fillRect(sx - R * 1.7, sy - R * 1.7, R * 3.4, R * 3.4);
+
+  if (g.hover > 0.01) {
+    ctx.save();
+    ctx.translate(sx, sy); ctx.rotate(g.tilt); ctx.scale(1, g.flat);
+    ctx.strokeStyle = col(base, 0.5 * g.hover * g.alpha);
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(0, 0, R * 1.02, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
+  }
+  ctx.save();
+  ctx.globalAlpha = g.alpha;
+  ctx.translate(sx, sy);
+  ctx.rotate(g.tilt);
+  ctx.scale(1, g.flat);
+  ctx.rotate(g.spinVinkel);
+  ctx.drawImage(g.sprite, -R * 1.2, -R * 1.2, R * 2.4, R * 2.4);
+  ctx.restore();
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.globalAlpha = 1;
+
+  const d = R * 2.1;
+  plasserMerke(g.dom, sx, sy, d, sy + R * 0.82 * g.flat + R * 0.18 + 12, tilstand.modus === 'oversikt' ? g.alpha : 0, tilstand.modus === 'oversikt');
+  g.dom.et.classList.toggle('hover', g.hover > 0.5);
+}
+
+function tegnPlanetKule(p, sx, sy, r, alpha) {
+  ctx.globalCompositeOperation = 'lighter';
+  const glow = p.landskap.skyBot;
+  const gl = ctx.createRadialGradient(sx, sy, r * 0.85, sx, sy, r * 2);
+  gl.addColorStop(0, rgba(glow, 0.3 * alpha));
+  gl.addColorStop(1, rgba(glow, 0));
+  ctx.fillStyle = gl;
+  ctx.fillRect(sx - r * 2, sy - r * 2, r * 4, r * 4);
+  ctx.globalCompositeOperation = 'source-over';
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.beginPath();
+  ctx.arc(sx, sy, r, 0, Math.PI * 2);
+  ctx.clip();
+
+  const ox = ((t * p.rotFart * (reduser ? 0.2 : 1) + p.rotOff) % 1) * TW;
+  const N = Math.max(20, Math.round(r / 2));
+  for (let i = 0; i < N; i++) {
+    const xn0 = -1 + (2 * i) / N, xn1 = -1 + (2 * (i + 1)) / N;
+    const u0 = Math.asin(xn0) / (Math.PI / 2), u1 = Math.asin(xn1) / (Math.PI / 2);
+    const s0 = ox + ((u0 + 1) / 2) * TH, s1 = ox + ((u1 + 1) / 2) * TH;
+    ctx.drawImage(p.tekstur, s0, 0, Math.max(0.5, s1 - s0), TH, sx - r + ((xn0 + 1) / 2) * 2 * r, sy - r, r * (xn1 - xn0) + 0.7, 2 * r);
+  }
+
+  const sh = ctx.createRadialGradient(sx - 0.38 * r, sy - 0.42 * r, 0.05 * r, sx, sy, 1.55 * r);
+  sh.addColorStop(0, 'rgba(255,244,220,0.3)');
+  sh.addColorStop(0.42, 'rgba(255,244,220,0)');
+  sh.addColorStop(0.72, 'rgba(8,16,22,0.3)');
+  sh.addColorStop(1, 'rgba(6,12,18,0.72)');
+  ctx.fillStyle = sh;
+  ctx.fillRect(sx - r, sy - r, 2 * r, 2 * r);
+  ctx.restore();
+
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = 'rgba(246,239,224,0.38)';
+  ctx.lineWidth = Math.max(1, r * 0.025);
+  ctx.beginPath();
+  ctx.arc(sx, sy, r, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+}
+
+function tegnPlaneter() {
+  const g = tilstand.g || sistGalakse;
+  for (const gg of galakser) {
+    if (gg !== g) for (const p of gg.planeter) plasserMerke(p.dom, 0, 0, 10, 0, 0, false);
+  }
+  if (!g || planetAlpha < 0.01) {
+    if (g) for (const p of g.planeter) plasserMerke(p.dom, 0, 0, 10, 0, 0, false);
+    return;
+  }
+  const par = [-px * 20, -py * 14];
+  const [gx, gy] = galakseSenter(g);
+  const [cx, cy] = tilSkjerm(gx, gy, par);
+
+  ctx.save();
+  ctx.setLineDash([2, 7]);
+  ctx.strokeStyle = `rgba(246,239,224,${0.2 * planetAlpha})`;
+  ctx.lineWidth = 1;
+  for (const p of g.planeter) {
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, p.rx * cam.z, p.ry * cam.z, L.tiltOrbit, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  const liste = g.planeter.map(p => {
+    const [wx, wy, dybde] = planetVerden(p);
+    const [sx, sy] = tilSkjerm(wx, wy, par);
+    return { p, sx, sy, dybde };
+  }).sort((a, b) => a.dybde - b.dybde);
+
+  for (const { p, sx, sy, dybde } of liste) {
+    const r = L.planetR * cam.z * (1 + 0.1 * dybde) * (1 + 0.08 * p.hover);
+    const a = p.alpha * planetAlpha;
+    if (a > 0.01) tegnPlanetKule(p, sx, sy, r, a);
+    const aktiv = tilstand.modus !== 'oversikt';
+    plasserMerke(p.dom, sx, sy, r * 2.3, sy + r + 12, a * (tilstand.modus === 'planet' && p === tilstand.p ? 0 : 1), aktiv);
+    p.dom.et.classList.toggle('hover', p.hover > 0.5);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Løkke                                                                */
+/* ------------------------------------------------------------------ */
+
+function oppdater(dt) {
+  t += dt;
+  const glatt = 1 - Math.exp(-dt * (reduser ? 30 : 4));
+
+  maal();
+  if (reduser) {
+    cam.x = camT.x; cam.y = camT.y; cam.lz = camT.lz; cam.lzVel = 0;
+  } else {
+    [cam.x, cam.xVel] = fjær(cam.x, cam.xVel, camT.x, dt);
+    [cam.y, cam.yVel] = fjær(cam.y, cam.yVel, camT.y, dt);
+    [cam.lz, cam.lzVel] = fjær(cam.lz, cam.lzVel, camT.lz, dt);
+  }
+  cam.z = Math.exp(cam.lz);
+
+  px += (pxT - px) * (1 - Math.exp(-dt * 3));
+  py += (pyT - py) * (1 - Math.exp(-dt * 3));
+  planetAlpha += (planetAlphaT - planetAlpha) * glatt;
+  orbitFaktor += (orbitFaktorT - orbitFaktor) * (1 - Math.exp(-dt * 3));
+
+  for (const g of galakser) {
+    g.alpha += (g.alphaT - g.alpha) * glatt;
+    g.hover += (g.hoverT - g.hover) * (1 - Math.exp(-dt * 8));
+    g.dx = reduser ? 0 : Math.sin(t * 0.21 + g.fase) * 7;
+    g.dy = reduser ? 0 : Math.cos(t * 0.17 + g.fase) * 6;
+    g.spinVinkel += dt * g.spin * (reduser ? 0.2 : 1);
+    for (const p of g.planeter) {
+      p.alpha += (p.alphaT - p.alpha) * glatt;
+      p.hover += (p.hoverT - p.hover) * (1 - Math.exp(-dt * 8));
+      p.a += dt * p.fart * orbitFaktor * (reduser ? 0.2 : 1);
+    }
+  }
+}
+
+function tegn(dt) {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.drawImage(bgCanvas, 0, 0, W, H);
+  tegnNebula();
+  tegnStjerner();
+  tegnStjerneskudd(dt);
+  for (const g of galakser) tegnGalakse(g);
+  tegnPlaneter();
+  tegnMus(dt);
+}
+
+let sist = performance.now();
+function ramme(naa) {
+  const dt = Math.min(0.05, (naa - sist) / 1000);
+  sist = naa;
+  if (!tilstand.liste) {
+    oppdater(dt);
+    tegn(dt);
+  }
+  requestAnimationFrame(ramme);
+}
+
+oppsett();
+fraHash();
+oppdaterUI();
+requestAnimationFrame(ramme);
+
+window.__univers = { gaaTil, galakser, tilstand, cam };
+</script>
+</body>
+</html>
