@@ -819,11 +819,11 @@
   function awardsHtml() {
     const played = matches.filter((m) => m.score1 != null && m.score2 != null && m.p1 && m.p2);
     if (!played.length) return '<div class="note">Ingen kamper er spilt ennå. Prisene dukker opp når resultatene kommer inn.</div>';
-    const st = new Map(players.map((p) => [p.id, { id: p.id, k: 0, w: 0, pf: 0 }]));
+    const st = new Map(players.map((p) => [p.id, { id: p.id, k: 0, w: 0, pf: 0, pa: 0 }]));
     played.forEach((m) => {
       const a = st.get(m.p1), b = st.get(m.p2);
       if (!a || !b) return;
-      a.k++; b.k++; a.pf += m.score1; b.pf += m.score2;
+      a.k++; b.k++; a.pf += m.score1; b.pf += m.score2; a.pa += m.score2; b.pa += m.score1;
       (m.score1 > m.score2 ? a : b).w++;
     });
     const list = [...st.values()].filter((x) => x.k > 0);
@@ -838,10 +838,11 @@
     const avg = (x) => x.pf / x.k;
     const total = (ids) => ids.map((id) => st.get(id).pf).join('/');
     const hi = top(list, avg, true);
-    const lo = top(list, avg, false);
+    const gen = top(list, (x) => x.pa / x.k, true);
+    const totalPa = (ids) => ids.map((id) => st.get(id).pa).join('/');
     card('Poengpumpa', hi.ids, `Scoret i snitt ${fmt1(hi.best)} poeng per kamp (totalt ${total(hi.ids)}). Pumpa går på høygir.`);
-    if (list.length > 1 && lo.ids.length < list.length && lo.best !== hi.best) {
-      card('Den gavmilde', lo.ids, `Scoret bare ${fmt1(lo.best)} poeng i snitt per kamp (totalt ${total(lo.ids)}). Åpenbart opptatt av å være en god vert.`);
+    if (list.length > 1 && gen.ids.length < list.length) {
+      card('Den gavmilde', gen.ids, `Slapp inn i snitt ${fmt1(gen.best)} poeng per kamp (totalt ${totalPa(gen.ids)}). Åpenbart en god vert, for ingen går tomhendt hjem.`);
     }
 
     const gap = (m) => Math.abs(m.score1 - m.score2);
