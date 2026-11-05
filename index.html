@@ -842,7 +842,7 @@
     const totalPa = (ids) => ids.map((id) => st.get(id).pa).join('/');
     card('Poengpumpa', hi.ids, `Scoret i snitt ${fmt1(hi.best)} poeng per kamp (totalt ${total(hi.ids)}). Pumpa går på høygir.`);
     if (list.length > 1 && gen.ids.length < list.length) {
-      card('Den gavmilde', gen.ids, `Slapp inn i snitt ${fmt1(gen.best)} poeng per kamp (totalt ${totalPa(gen.ids)}). Åpenbart en god vert, for ingen går tomhendt hjem.`);
+      card('Den gavmilde', gen.ids, `Slapp inn i snitt ${fmt1(gen.best)} poeng per kamp (totalt ${totalPa(gen.ids)}). Delte gavmildt ut poeng til alle motstanderne.`);
     }
 
     const gap = (m) => Math.abs(m.score1 - m.score2);
